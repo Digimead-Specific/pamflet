@@ -1,4 +1,23 @@
+!.gitignore
+
+*.class
+
+# Build directories #
+bin/
+boot/
+build/
 lib_managed/
-project/boot/
+project/target/
+project/project/target/
+project-*/
 target/
-.history
+
+# Package files #
+*.jar
+*.war
+*.ear
+
+# Hidden and service files #
+*~
+.*
+_*
