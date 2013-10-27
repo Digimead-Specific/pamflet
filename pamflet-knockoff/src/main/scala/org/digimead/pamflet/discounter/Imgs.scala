@@ -20,14 +20,18 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.digimead.pamflet
+package org.digimead.pamflet.discounter
+
+import scala.xml.Node
 
 import com.tristanhunt.knockoff._
-import scala.util.parsing.input.{ CharSequenceReader, Position, Reader }
 
-object PamfletDiscounter
-  extends Discounter
-  with FencedDiscounter
-  with SmartyDiscounter
-  with IdentifiedHeaders
-  with Html5Imgs
+object Imgs {
+  // see http://www.w3.org/html/wg/drafts/html/master/syntax.html#void-elements
+  trait Html5 extends Discounter { self: XHTMLWriter ⇒
+    override def imageLinkToXHTML: (Seq[Span], String, Option[String]) ⇒ Node = {
+      (spans, url, title) ⇒
+        <img src={ url } title={ title.getOrElse(null) } alt={ spans.map(spanToXHTML(_)) }/>
+    }
+  }
+}

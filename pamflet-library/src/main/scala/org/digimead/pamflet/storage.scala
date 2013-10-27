@@ -25,6 +25,7 @@ package org.digimead.pamflet
 import java.io.File
 import com.tristanhunt.knockoff._
 import collection.immutable.Map
+import org.digimead.pamflet.discounter.Discounter
 
 trait Storage {
   def globalized: Globalized
@@ -84,7 +85,7 @@ case class FileStorage(base: File) extends Storage {
     val frontin = Frontin(read(file))
     val template = StringTemplate(propFiles, frontin header)
     try {
-      PamfletDiscounter.knockoff(template(frontin body)) -> template
+      Discounter.knockoff(template(frontin body)) -> template
     } catch {
       case e: Throwable =>
         Console.err.println("Error while processing " + file.toString)

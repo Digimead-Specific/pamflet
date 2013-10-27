@@ -22,11 +22,12 @@
 
 package org.digimead.pamflet
 
-import PamfletDiscounter.toXHTML
+import org.digimead.pamflet.discounter.Discounter
+import org.digimead.pamflet.discounter.Headers
 
 object Printer {
   def webify(page: Page) =
-    BlockNames.encode(page.template.get("out") getOrElse {
+    Headers.BlockNames.encode(page.template.get("out") getOrElse {
       page.name + ".html"
     })
   /** File names shouldn't be url encoded, just space converted */
@@ -50,7 +51,7 @@ case class Printer(contents: Contents, globalized: Globalized, manifest: Option[
 
   def toc(current: Page) = {
     val href: Page => String = current match {
-      case ScrollPage(_, _) => (p: Page) => BlockNames.fragment(p.name)
+      case ScrollPage(_, _) => (p: Page) => Headers.BlockNames.fragment(p.name)
       case _ => Printer.webify
     }
 
@@ -265,7 +266,7 @@ case class Printer(contents: Contents, globalized: Globalized, manifest: Option[
                 case page: DeepContents =>
                   toc(page)
                 case page: ContentPage =>
-                  toXHTML(page.blocks) ++ next.collect {
+                  Discounter.toXHTML(page.blocks) ++ next.collect {
                     case n: AuthoredPage =>
                       <div class="bottom nav span-16">
                         <em>Next Page</em>
@@ -279,7 +280,7 @@ case class Printer(contents: Contents, globalized: Globalized, manifest: Option[
                       </div>
                   } ++ toc(page) ++ comment(page)
                 case page: ScrollPage =>
-                  toc(page) ++ toXHTML(page.blocks)
+                  toc(page) ++ Discounter.toXHTML(page.blocks)
             } }
           </div>
         </div>

@@ -25,6 +25,8 @@ package org.digimead.pamflet
 import com.tristanhunt.knockoff._
 import java.net.URI
 import collection.immutable.Map
+import org.digimead.pamflet.discounter.Fenced
+import org.digimead.pamflet.discounter.Headers
 
 case class Globalized(
   contents: Map[String, Contents],
@@ -74,7 +76,7 @@ sealed trait AuthoredPage extends Page {
   def blocks: Seq[Block]
   lazy val referencedLangs =
     (Set.empty[String] /: blocks) {
-      case (s, FencedCodeBlock(_, _, Some(lang))) => s + lang
+      case (s, Fenced.CodeBlock(_, _, Some(lang))) => s + lang
       case (s, _) => s
     }
   lazy val prettifyLangs = referencedLangs.filter { lang =>
@@ -89,7 +91,7 @@ sealed trait AuthoredPage extends Page {
   }
 }
 trait ContentPage extends AuthoredPage {
-  lazy val name = BlockNames.name(blocks)
+  lazy val name = Headers.BlockNames.name(blocks)
 }
 case class Leaf(localPath: String,
                 blocks: Seq[Block],

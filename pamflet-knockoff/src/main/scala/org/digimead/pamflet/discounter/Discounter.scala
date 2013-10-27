@@ -20,15 +20,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.digimead.pamflet
+package org.digimead.pamflet.discounter
 
-import scala.xml.Node
-import com.tristanhunt.knockoff._
+import com.tristanhunt.knockoff.{ Discounter ⇒ KDiscounter }
 
-// see http://www.w3.org/html/wg/drafts/html/master/syntax.html#void-elements
-trait Html5Imgs extends Discounter { self: XHTMLWriter =>
-  override def imageLinkToXHTML : ( Seq[Span], String, Option[String] ) => Node = {
-    ( spans, url, title ) => <img src={ url } title={ title.getOrElse(null) }
-                                  alt={ spans.map( spanToXHTML(_) ) } />
-  }
-}
+object Discounter
+  extends KDiscounter
+  with Fenced.Discounter
+  with Headers.Identified
+  with Imgs.Html5
+  with Smarty.Discounter

@@ -1,0 +1,13 @@
+[scala]
+  version: 2.10.3
+[app]
+  org: org.digimead
+  name: pamflet-app
+  version: 0.5
+  class: org.digimead.pamflet.Application
+  cross-versioned: binary
+[repositories]
+  local
+  maven-central
+[boot]
+  directory: ${user.home}/.sbt/pamflet-boot
