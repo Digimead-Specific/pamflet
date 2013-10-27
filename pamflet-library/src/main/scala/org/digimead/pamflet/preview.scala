@@ -26,6 +26,7 @@ import unfiltered.request._
 import unfiltered.response._
 import java.io.OutputStream
 import java.net.URI
+import org.digimead.pamflet.content.Globalized
 
 object Preview {
   def apply(globalized: => Globalized) = {

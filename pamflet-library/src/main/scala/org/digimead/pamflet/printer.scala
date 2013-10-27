@@ -24,6 +24,14 @@ package org.digimead.pamflet
 
 import org.digimead.pamflet.discounter.Discounter
 import org.digimead.pamflet.discounter.Headers
+import org.digimead.pamflet.content.Page
+import org.digimead.pamflet.content.Globalized
+import org.digimead.pamflet.content.Content
+import org.digimead.pamflet.content.ScrollPage
+import org.digimead.pamflet.content.ContentPage
+import org.digimead.pamflet.content.DeepContents
+import org.digimead.pamflet.content.Section
+import org.digimead.pamflet.content.AuthoredPage
 
 object Printer {
   def webify(page: Page) =
@@ -36,7 +44,7 @@ object Printer {
       page.name + ".html"
     }).replace(' ', '+')
 }
-case class Printer(contents: Contents, globalized: Globalized, manifest: Option[String]) {
+case class Printer(contents: Content, globalized: Globalized, manifest: Option[String]) {
   def defaultLanguage = globalized.defaultLanguage
   val relativeBase: String = relative(defaultLanguage)
   def relative(lang: String): String =

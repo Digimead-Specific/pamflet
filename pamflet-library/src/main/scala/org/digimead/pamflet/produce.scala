@@ -24,8 +24,9 @@ package org.digimead.pamflet
 
 import java.io.{File,FileOutputStream,InputStream,
                 OutputStream,ByteArrayInputStream,Reader,StringReader}
-
 import scala.annotation.tailrec
+import org.digimead.pamflet.content.Globalized
+import org.digimead.pamflet.content.Content
 
 object Produce {
   def apply(globalized: Globalized, target: File) {
@@ -34,7 +35,7 @@ object Produce {
       else apply(globalized(lang), globalized, new File(target, lang))
     }
   }
-  def apply(contents: Contents, globalized: Globalized, target: File) {
+  def apply(contents: Content, globalized: Globalized, target: File) {
     def writeString(path: String, contents: String, target:File) {
       write(path, target, new ByteArrayInputStream(contents.getBytes("utf-8")))
     }
@@ -116,7 +117,7 @@ object Produce {
       offlineTarget
     )
   }
-  def filePaths(contents: Contents) =
+  def filePaths(contents: Content) =
     ("fork.png" :: "twitter-bird-dark-bgs.png" :: Nil).map {
       "img/" + _
     } :::

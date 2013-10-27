@@ -26,6 +26,10 @@ import java.io.File
 import com.tristanhunt.knockoff._
 import collection.immutable.Map
 import org.digimead.pamflet.discounter.Discounter
+import org.digimead.pamflet.content.Globalized
+import org.digimead.pamflet.content.Content
+import org.digimead.pamflet.content.Section
+import org.digimead.pamflet.content.Leaf
 
 trait Storage {
   def globalized: Globalized
@@ -51,7 +55,7 @@ case class FileStorage(base: File) extends Storage {
         map { _.toURI }
       val propFiles = if (isDefaultLang) propFile(base).toSeq
                       else propFile(base).toSeq ++ propFile(dir).toSeq
-      lang -> Contents(lang, isDefaultLang, rootSection(dir, propFiles), css, files, favicon, defaultTemplate)
+      lang -> Content(lang, isDefaultLang, rootSection(dir, propFiles), css, files, favicon, defaultTemplate)
     }: _*)
     Globalized(contents, defaultTemplate)
   }
