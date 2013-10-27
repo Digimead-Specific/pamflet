@@ -53,8 +53,7 @@ object Language {
     "tr" -> "Türkçe",
     "vi" -> "Tiếng Việt",
     "uk" -> "Українська",
-    "zh" -> "中文"
-  )
+    "zh" -> "中文")
 
   def languageName(code: String): Option[String] = languageNames get code
 }

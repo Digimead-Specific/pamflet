@@ -32,12 +32,12 @@ object Frontin {
 
   def apply(str: String): Frontin =
     str.linesWithSeparators.toList match {
-      case Nil => Frontin(None, "")
-      case x :: xs if seperates(x) =>
-        xs span {!seperates(_)} match {
-          case (h, b) => Frontin(Some(h.mkString("")),
+      case Nil ⇒ Frontin(None, "")
+      case x :: xs if seperates(x) ⇒
+        xs span { !seperates(_) } match {
+          case (h, b) ⇒ Frontin(Some(h.mkString("")),
             if (b isEmpty) "" else b.tail.mkString(""))
         }
-      case _ => Frontin(None, str)
+      case _ ⇒ Frontin(None, str)
     }
 }

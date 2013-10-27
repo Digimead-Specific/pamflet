@@ -23,9 +23,14 @@
 package org.digimead.pamflet
 
 import java.io.{
-  File,FileInputStream,ByteArrayInputStream,InputStreamReader,StringReader}
+  File,
+  FileInputStream,
+  ByteArrayInputStream,
+  InputStreamReader,
+  StringReader
+}
 import java.nio.charset.Charset
-import org.antlr.stringtemplate.{StringTemplate => STImpl}
+import org.antlr.stringtemplate.{ StringTemplate ⇒ STImpl }
 
 trait Template {
   /** Replace template values in input stream with bound properties */
@@ -36,36 +41,39 @@ trait Template {
   def languages: Seq[String]
 }
 
-case class StringTemplate(files: Seq[File], str: Option[String]) extends Template {
-  def apply(input: CharSequence) =
-    if (!files.isEmpty) {
-      val st = new STImpl
-      st.setTemplate(input.toString)
-      st.setAttributes(properties)
-      st.toString
-    } else input
+object Template {
+  case class String(files: Seq[File], str: Option[java.lang.String]) extends Template {
+    def apply(input: CharSequence) =
+      if (!files.isEmpty) {
+        val st = new STImpl
+        st.setTemplate(input.toString)
+        st.setAttributes(properties)
+        st.toString
+      } else input
 
-  private def properties = {
-    val p = new java.util.Properties
-    for (f <- files) {
-      val q = new java.util.Properties
-      q.load(new InputStreamReader(new FileInputStream(f),
-                                   Charset.forName("UTF-8")))
-      p.putAll(q)
+    private def properties = {
+      val p = new java.util.Properties
+      for (f ← files) {
+        val q = new java.util.Properties
+        q.load(new InputStreamReader(new FileInputStream(f),
+          Charset.forName("UTF-8")))
+        p.putAll(q)
+      }
+      for (s ← str) {
+        val q = new java.util.Properties
+        q.load(new StringReader(s))
+        p.putAll(q)
+      }
+      p
     }
-    for (s <- str) {
-      val q = new java.util.Properties
-      q.load(new StringReader(s))
-      p.putAll(q)
-    }
-    p
+    def get(key: java.lang.String) = Option(properties.get(key)) map { _.toString }
+    lazy val defaultLanguage: java.lang.String =
+      get("language") getOrElse "en"
+    lazy val languages: Seq[java.lang.String] =
+      get("languages") match {
+        case Some(xs) ⇒ xs.split(",").toSeq map { _.trim }
+        case None ⇒ Seq(defaultLanguage)
+      }
   }
-  def get(key: String) = Option(properties.get(key)) map { _.toString }
-  lazy val defaultLanguage: String =
-    get("language") getOrElse "en"
-  lazy val languages: Seq[String] =
-    get("languages") match {
-      case Some(xs) => xs.split(",").toSeq map {_.trim}
-      case None     => Seq(defaultLanguage)
-    }
 }
+

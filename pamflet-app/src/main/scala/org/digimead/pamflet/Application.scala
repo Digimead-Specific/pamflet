@@ -61,7 +61,7 @@ object Application {
     0
   }
 
-  private def storage(dir: File) = FileStorage(dir)
+  private def storage(dir: File) = Storage.File(dir)
 
   object Dir {
     def unapply(path: String) = {

@@ -22,10 +22,11 @@
 
 package org.digimead.pamflet
 
-import com.tristanhunt.knockoff._
+import org.digimead.pamflet.content.AuthoredPage
 import org.digimead.pamflet.discounter.Discounter
 import org.digimead.pamflet.discounter.Headers
-import org.digimead.pamflet.content.AuthoredPage
+
+import com.tristanhunt.knockoff.Header
 
 object Outline {
   private case class Return(nodes: xml.NodeSeq, rest: Seq[Header])
