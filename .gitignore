@@ -1,15 +1,18 @@
 !.gitignore
 
 *.class
+*.log
 
 # Build directories #
 bin/
 boot/
 build/
+dist/
 lib_managed/
 project/target/
 project/project/target/
 project-*/
+src_managed/
 target/
 
 # Package files #
