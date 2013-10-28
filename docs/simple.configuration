@@ -2,12 +2,12 @@
   version: 2.10.3
 [app]
   org: org.digimead
-  name: pamflet-app
-  version: 0.5.0.2-SNAPSHOT
-  class: org.digimead.pamflet.Application
+  name: booklet-app
+  version: 0.5.0.3-SNAPSHOT
+  class: org.digimead.booklet.Application
   cross-versioned: binary
 [repositories]
   local
   maven-central
 [boot]
-  directory: ${user.home}/.sbt/pamflet-boot
+  directory: ${user.home}/.sbt/booklet-boot

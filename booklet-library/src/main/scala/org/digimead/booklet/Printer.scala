@@ -30,9 +30,12 @@ import org.digimead.booklet.content.Globalized
 import org.digimead.booklet.content.Page
 import org.digimead.booklet.content.ScrollPage
 import org.digimead.booklet.content.Section
-
 import org.digimead.booklet.discounter.Discounter
 import org.digimead.booklet.discounter.Headers
+import org.fusesource.scalate.TemplateEngine
+import org.digimead.booklet.discounter.Imgs
+import java.nio.charset.Charset
+import java.io.File
 
 case class Printer(contents: Content, globalized: Globalized, manifest: Option[String]) {
   def defaultLanguage = globalized.defaultLanguage
@@ -173,60 +176,65 @@ case class Printer(contents: Content, globalized: Globalized, manifest: Option[S
     val arrow = page.getProperty("pamflet.arrow") getOrElse "❧"
     val colorScheme = page.getProperty("color_scheme") map { "color_scheme-" + _ } getOrElse "color_scheme-redmond"
 
-    val html = <html>
-                 <head>
-                   <title>{ "%s — %s".format(contents.title, page.name) }</title>
-                   {
-                     contents.favicon match {
-                       case Some(x) ⇒ <link rel="shortcut icon" href="favicon.ico"/>
-                       case None ⇒
-                         if (contents.isDefaultLang) Nil
-                         else {
-                           globalized.defaultContents.favicon match {
-                             case Some(x) ⇒ <link rel="shortcut icon" href={ relativeBase + "favicon.ico" }/>
-                             case None ⇒ Nil
-                           }
+    val properties = Map(
+      "favicon" -> contents.favicon,
+      "title" -> "%s — %s".format(contents.title, page.name))
+    page.getProperty("layout") match {
+      case None ⇒
+        val tree = <html>
+                     <head>
+                       <title>{ page.properties.getProperty("title") }</title>
+                       {
+                         contents.favicon match {
+                           case Some(x) ⇒ <link rel="shortcut icon" href="favicon.ico"/>
+                           case None ⇒
+                             if (contents.isDefaultLang) Nil
+                             else {
+                               globalized.defaultContents.favicon match {
+                                 case Some(x) ⇒ <link rel="shortcut icon" href={ relativeBase + "favicon.ico" }/>
+                                 case None ⇒ Nil
+                               }
+                             }
                          }
-                     }
-                   }
-                   <link rel="stylesheet" href={ relativeBase + "css/blueprint/screen.css" } type="text/css" media="screen, projection"/>
-                   <link rel="stylesheet" href={ relativeBase + "css/blueprint/grid.css" } type="text/css" media={ bigScreen }/>
-                   <link rel="stylesheet" href={ relativeBase + "css/blueprint/print.css" } type="text/css" media="print"/>
-                   <!--[if lt IE 8]>
+                       }
+                       <link rel="stylesheet" href={ relativeBase + "css/blueprint/screen.css" } type="text/css" media="screen, projection"/>
+                       <link rel="stylesheet" href={ relativeBase + "css/blueprint/grid.css" } type="text/css" media={ bigScreen }/>
+                       <link rel="stylesheet" href={ relativeBase + "css/blueprint/print.css" } type="text/css" media="print"/>
+                       <!--[if lt IE 8]>
           <link rel="stylesheet" href={ relativeBase + "css/blueprint/ie.css" } type="text/css" media="screen, projection"/>
         <![endif]-->
-                   <link rel="stylesheet" href={ relativeBase + "css/pamflet.css" } type="text/css" media="screen, projection"/>
-                   <link rel="stylesheet" href={ relativeBase + "css/pamflet-print.css" } type="text/css" media="print"/>
-                   <link rel="stylesheet" href={ relativeBase + "css/pamflet-grid.css" } type="text/css" media={ bigScreen }/>
-                   <link rel="stylesheet" href={ relativeBase + "css/color_scheme-redmond.css" } type="text/css" media="screen, projection"/>
-                   <link rel="stylesheet" href={ relativeBase + "css/color_scheme-github.css" } type="text/css" media="screen, projection"/>
-                   <link rel="stylesheet" href={ relativeBase + "css/color_scheme-monokai.css" } type="text/css" media="screen, projection"/>
-                   <script type="text/javascript" src={ relativeBase + "js/jquery-1.6.2.min.js" }></script>
-                   <script type="text/javascript" src={ relativeBase + "js/jquery.collapse.js" }></script>
-                   <script type="text/javascript" src={ relativeBase + "js/pamflet.js" }></script>
-                   <script type="text/javascript">
-                     Booklet.page.language = '{ xml.Unparsed(contents.language) }
-                     ';
-                   </script>
-                   {
-                     prettify(page)
-                   }
-                   {
-                     (globalized.defaultContents.css.map {
-                       case (filename, contents) ⇒
-                         <link rel="stylesheet" href={ relativeBase + "css/" + filename } type="text/css" media="screen, projection"/>
-                     }) ++
-                       (if (contents.isDefaultLang) Nil
-                       else contents.css.map {
-                         case (filename, contents) ⇒
-                           <link rel="stylesheet" href={ "css/" + filename } type="text/css" media="screen, projection"/>
-                       })
-                   }
-                   <meta charset="utf-8"/>
-                   <meta content="width=device-width, initial-scale=1" name="viewport"></meta>
-                   {
-                     page.getProperty("google-analytics").toList.map { uid: String ⇒
-                       <script type="text/javascript"><!--
+                       <link rel="stylesheet" href={ relativeBase + "css/pamflet.css" } type="text/css" media="screen, projection"/>
+                       <link rel="stylesheet" href={ relativeBase + "css/pamflet-print.css" } type="text/css" media="print"/>
+                       <link rel="stylesheet" href={ relativeBase + "css/pamflet-grid.css" } type="text/css" media={ bigScreen }/>
+                       <link rel="stylesheet" href={ relativeBase + "css/color_scheme-redmond.css" } type="text/css" media="screen, projection"/>
+                       <link rel="stylesheet" href={ relativeBase + "css/color_scheme-github.css" } type="text/css" media="screen, projection"/>
+                       <link rel="stylesheet" href={ relativeBase + "css/color_scheme-monokai.css" } type="text/css" media="screen, projection"/>
+                       <script type="text/javascript" src={ relativeBase + "js/jquery-1.6.2.min.js" }></script>
+                       <script type="text/javascript" src={ relativeBase + "js/jquery.collapse.js" }></script>
+                       <script type="text/javascript" src={ relativeBase + "js/pamflet.js" }></script>
+                       <script type="text/javascript">
+                         Booklet.page.language = '{ xml.Unparsed(contents.language) }
+                         ';
+                       </script>
+                       {
+                         prettify(page)
+                       }
+                       {
+                         (globalized.defaultContents.css.map {
+                           case (filename, contents) ⇒
+                             <link rel="stylesheet" href={ relativeBase + "css/" + filename } type="text/css" media="screen, projection"/>
+                         }) ++
+                           (if (contents.isDefaultLang) Nil
+                           else contents.css.map {
+                             case (filename, contents) ⇒
+                               <link rel="stylesheet" href={ "css/" + filename } type="text/css" media="screen, projection"/>
+                           })
+                       }
+                       <meta charset="utf-8"/>
+                       <meta content="width=device-width, initial-scale=1" name="viewport"></meta>
+                       {
+                         page.getProperty("google-analytics").toList.map { uid: String ⇒
+                           <script type="text/javascript"><!--
             var _gaq = _gaq || [];
             _gaq.push(['_setAccount', '{xml.Unparsed(uid)}']);
             _gaq.push(['_trackPageview']);
@@ -236,90 +244,104 @@ case class Printer(contents: Content, globalized: Globalized, manifest: Option[S
               var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
             }})();
             --></script>
-                     }
-                   }
-                   {
-                     page.getProperty("twitter").map { twt ⇒
-                       <script type="text/javascript">
-                         Booklet.twitter = '{ xml.Unparsed(twt) }
-                         ';
-                       </script>
-                     }.toSeq
-                   }
-                 </head>
-                 <body class={ colorScheme }>
-                   {
-                     prev.map { p ⇒
-                       <a class="page prev nav" href={ Printer.webify(p) }>
-                         <span class="space">&nbsp;</span>
-                         <span class="flip">{ arrow }</span>
-                       </a>
-                     }.toSeq ++
-                       next.map { n ⇒
-                         <a class="page next nav" href={ Printer.webify(n) }>
-                           <span class="space">&nbsp;</span>
-                           <span>{ arrow }</span>
-                         </a>
-                       }.toSeq
-                   }
-                   <div class="container">
-                     <div class="span-16 prepend-1 append-1">
-                       <div class="span-16 top nav">
-                         <div class="span-16 title">
-                           <span>{ contents.title }</span>{
-                             if (contents.title != page.name)
-                               "— " + page.name
-                             else ""
+                         }
+                       }
+                       {
+                         page.getProperty("twitter").map { twt ⇒
+                           <script type="text/javascript">
+                             Booklet.twitter = '{ xml.Unparsed(twt) }
+                             ';
+                           </script>
+                         }.toSeq
+                       }
+                     </head>
+                     <body class={ colorScheme }>
+                       {
+                         prev.map { p ⇒
+                           <a class="page prev nav" href={ Printer.webify(p) }>
+                             <span class="space">&nbsp;</span>
+                             <span class="flip">{ arrow }</span>
+                           </a>
+                         }.toSeq ++
+                           next.map { n ⇒
+                             <a class="page next nav" href={ Printer.webify(n) }>
+                               <span class="space">&nbsp;</span>
+                               <span>{ arrow }</span>
+                             </a>
+                           }.toSeq
+                       }
+                       <div class="container">
+                         <div class="span-16 prepend-1 append-1">
+                           <div class="span-16 top nav">
+                             <div class="span-16 title">
+                               <span>{ contents.title }</span>{
+                                 if (contents.title != page.name)
+                                   "— " + page.name
+                                 else ""
+                               }
+                             </div>
+                           </div>
+                         </div>
+                         <div class="span-16 prepend-1 append-1 contents">
+                           {
+                             page match {
+                               case page: DeepContents ⇒
+                                 toc(page)
+                               case page: ContentPage ⇒
+                                 Discounter.toXHTML(page.blocks) ++ next.collect {
+                                   case n: AuthoredPage ⇒
+                                     <div class="bottom nav span-16">
+                                       <em>Next Page</em>
+                                       <span class="arrow">{ arrow }</span>
+                                       <a href={ Printer.webify(n) }> { n.name } </a>
+                                       { languageBar(page) }
+                                     </div>
+                                   case _ ⇒
+                                     <div class="bottom nav end span-16">
+                                       { languageBar(page) }
+                                     </div>
+                                 } ++ toc(page) ++ comment(page)
+                               case page: ScrollPage ⇒
+                                 toc(page) ++ Discounter.toXHTML(page.blocks)
+                             }
                            }
                          </div>
                        </div>
-                     </div>
-                     <div class="span-16 prepend-1 append-1 contents">
                        {
-                         page match {
-                           case page: DeepContents ⇒
-                             toc(page)
-                           case page: ContentPage ⇒
-                             Discounter.toXHTML(page.blocks) ++ next.collect {
-                               case n: AuthoredPage ⇒
-                                 <div class="bottom nav span-16">
-                                   <em>Next Page</em>
-                                   <span class="arrow">{ arrow }</span>
-                                   <a href={ Printer.webify(n) }> { n.name } </a>
-                                   { languageBar(page) }
-                                 </div>
-                               case _ ⇒
-                                 <div class="bottom nav end span-16">
-                                   { languageBar(page) }
-                                 </div>
-                             } ++ toc(page) ++ comment(page)
-                           case page: ScrollPage ⇒
-                             toc(page) ++ Discounter.toXHTML(page.blocks)
-                         }
+                         page.getProperty("github").map { repo ⇒
+                           <a href={ "http://github.com/" + repo } class="fork nav"><img src={ relativeBase + "img/fork.png" } alt="Fork me on GitHub"/></a>
+                         }.toSeq
                        }
-                     </div>
-                   </div>
-                   {
-                     page.getProperty("github").map { repo ⇒
-                       <a href={ "http://github.com/" + repo } class="fork nav"><img src={ relativeBase + "img/fork.png" } alt="Fork me on GitHub"/></a>
-                     }.toSeq
-                   }
-                   {
-                     page.getProperty("twitter").map { twt ⇒
-                       <div class="highlight-outer">
-                         <div class="highlight-menu">
-                           <ul>
-                             <li><button id="highlight-button-twitter"><img src={ relativeBase + "img/twitter-bird-dark-bgs.png" }/></button></li>
-                           </ul>
-                         </div>
-                       </div>
-                     }.toSeq
-                   }
-                 </body>
-               </html>
-    manifest.map { mf ⇒
-      html % new scala.xml.UnprefixedAttribute("manifest", mf, scala.xml.Null)
-    } getOrElse { html }
+                       {
+                         page.getProperty("twitter").map { twt ⇒
+                           <div class="highlight-outer">
+                             <div class="highlight-menu">
+                               <ul>
+                                 <li><button id="highlight-button-twitter"><img src={ relativeBase + "img/twitter-bird-dark-bgs.png" }/></button></li>
+                               </ul>
+                             </div>
+                           </div>
+                         }.toSeq
+                       }
+                     </body>
+                   </html>
+        val content = manifest.map { mf ⇒
+          tree % new scala.xml.UnprefixedAttribute("manifest", mf, scala.xml.Null)
+        } getOrElse { tree } map { nodes ⇒
+          val html = nodes.head match {
+            case <html>{ _* }</html> ⇒ nodes.head
+            case _ ⇒ <html>{ nodes }</html>
+          }
+          val w = new java.io.StringWriter()
+          xml.XML.write(w, html, "UTF-8", xmlDecl = false, doctype = xml.dtd.DocType("html", xml.dtd.SystemID("about:legacy-compat"), Nil))
+          w.toString()
+        }
+        content.headOption.getOrElse { throw new IllegalStateException("Unable to convert XML page representation to string.") }
+      case Some(layout) ⇒
+        val engine = new TemplateEngine
+        val base = new File(page.getProperty("base") getOrElse { throw new IllegalStateException("Unable to find 'base' property.") })
+        engine.layout(new File(base, layout).toString())
+    }
   }
 
   def named(name: String) =

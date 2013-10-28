@@ -78,17 +78,8 @@ object Produce {
       val targetDir = (if (offline) offlineTarget else target)
       val printer = Printer(contents, globalized, manifestOpt)
       contents.pages.foreach { page ⇒
-        val w = new java.io.StringWriter()
-        xml.XML.write(w,
-          printer.print(page),
-          "utf-8",
-          xmlDecl = false,
-          doctype = xml.dtd.DocType(
-            "html",
-            xml.dtd.SystemID("about:legacy-compat"),
-            Nil))
         val pagePath = Printer.fileify(page)
-        writeString(pagePath, w.toString, targetDir)
+        writeString(pagePath, printer.print(page), targetDir)
       }
       css.foreach {
         case (path, contents) ⇒

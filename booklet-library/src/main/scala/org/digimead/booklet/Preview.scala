@@ -45,7 +45,7 @@ object Preview {
       responseStreamer(files(lang)(name))
     def pageResponse(lang: String, name: String) =
       Printer(globalized(lang), globalized, None).printNamed(name).map { html ⇒
-        Html5(html)
+        ResponseString(html)
       }.getOrElse { NotFound }
 
     unfiltered.jetty.Http.anylocal.filter(unfiltered.filter.Planify {

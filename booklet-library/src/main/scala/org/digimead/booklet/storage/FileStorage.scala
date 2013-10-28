@@ -43,6 +43,7 @@ class FileStorage(base: File, blocks: Seq[String] = Nil) extends Storage {
    */
   def baseBookletProperties: Properties = {
     val properties = new java.util.Properties
+    properties.setProperty("base", base.toString())
     val propertiesFile = new File(base, Storage.bookletTemplate)
     if (propertiesFile.exists() && propertiesFile.isFile() && propertiesFile.canRead())
       mergeWithFiles(properties, propertiesFile)
