@@ -3,7 +3,7 @@
 [app]
   org: org.digimead
   name: pamflet-app
-  version: 0.5
+  version: 0.5.0.2-SNAPSHOT
   class: org.digimead.pamflet.Application
   cross-versioned: binary
 [repositories]
