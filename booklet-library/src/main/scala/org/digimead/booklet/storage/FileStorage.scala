@@ -124,6 +124,13 @@ class FileStorage(val base: File, val properties: Properties = new Properties) e
         throw e
     }
   }
+  def writeTemplates(target: File, lang: String)(implicit properties: Properties) {
+    log.debug(s"Write templates to ${target.getCanonicalPath()} for '${lang}'.")
+    if (lang == template.defaultLanguage)
+      Shared.writeTo(Shared.resourcePaths(Set(), true), target)
+    else
+      Shared.writeTo(Shared.resourcePaths(Set(), true), target, lang)
+  }
 
   protected def bookletSection(template: Template, localPath: String, dir: File)(implicit properties: Properties): Seq[Section] = {
     val files: List[File] = (Option(dir.listFiles) match {
@@ -181,13 +188,6 @@ class FileStorage(val base: File, val properties: Properties = new Properties) e
     !f.isDirectory &&
     !f.getName.startsWith(".") &&
     (f.getName.endsWith(".markdown") || f.getName.endsWith(".md")))
-  protected def writeTemplates(target: File, lang: String)(implicit properties: Properties) {
-    log.debug(s"Write templates to ${target.getCanonicalPath()} for '${lang}'.")
-    if (lang == template.defaultLanguage)
-      Shared.writeTo(Shared.resourcePaths(Set(), true), target)
-    else
-      Shared.writeTo(Shared.resourcePaths(Set(), true), target, lang)
-  }
   protected def updateProperties(properties: Properties, lang: String) {
     implicit val bookletProperties = properties
     val isDefaultLang = lang == template.defaultLanguage

@@ -38,7 +38,7 @@ object Shared {
   def resourcePaths(prettifyLangs: Set[String], withTemplates: Boolean = false) =
     {
       if (withTemplates)
-        Booklet.indexTemplate :: Booklet.indexMarkdown :: Nil
+        Booklet.pageTemplate :: Booklet.indexTemplate :: Booklet.indexMarkdown :: Nil
       else
         Nil
     } ++ {

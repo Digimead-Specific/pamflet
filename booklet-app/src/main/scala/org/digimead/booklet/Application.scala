@@ -40,22 +40,31 @@ object Application {
   def run(args: Array[String]) = args match {
     case args if args.size >= 2 && args.takeRight(2).forall(dir(_).nonEmpty) ⇒
       val Array(input, output) = args.takeRight(2).map(dir(_).get)
-      val properties = buildProperties(args.dropRight(2))
-      Produce(storage(input, properties).globalized, output)
-      log.info("Wrote booklet to " + output); 0
+      processProperties(args.dropRight(2), input) match {
+        case Right(properties) ⇒
+          Produce(storage(input, properties).globalized, output)
+          log.info("Wrote booklet to " + output); 0
+        case Left(returnCode) if returnCode >= 0 ⇒ returnCode
+        case Left(returnCode) ⇒ help()
+      }
     case args if args.size >= 1 && dir(args.last).nonEmpty ⇒
       val input = dir(args.last).get
-      val properties = buildProperties(args.dropRight(1))
-      preview(input, properties)
+      processProperties(args.dropRight(1), input) match {
+        case Right(properties) ⇒
+          preview(input, properties)
+        case Left(returnCode) if returnCode >= 0 ⇒ returnCode
+        case Left(returnCode) ⇒ help()
+      }
     case other ⇒
-      val properties = buildProperties(args)
       dir("docs") match {
         case Some(input) ⇒
-          preview(input, properties)
-        case _ ⇒
-          println("""Usage: pf [SRC] [DEST]
-                    |
-                    |Default SRC is ./docs""".stripMargin); 1
+          processProperties(args, input) match {
+            case Right(properties) ⇒
+              preview(input, properties)
+            case Left(returnCode) if returnCode >= 0 ⇒ returnCode
+            case Left(returnCode) ⇒ help()
+          }
+        case _ ⇒ help()
       }
   }
   def preview(input: File, properties: Properties) = {
@@ -68,6 +77,14 @@ object Application {
     }; 0
   }
 
+  protected def help() = {
+    println("""Usage: booklet [options] [@userPropertiesFile] [SRC] [DEST]
+              |-v -v verbose
+              |-s save templates for customization
+              |-? -h help
+              |
+              |Default SRC is ./docs""".stripMargin); 1
+  }
   protected def dir(path: String) = new File(path) match {
     case file if file.exists && file.isDirectory ⇒ Some(file)
     case _ ⇒ None
@@ -77,7 +94,7 @@ object Application {
     case _ ⇒ None
   }
   protected def storage(dir: File, properties: Properties) = FileStorage(dir, properties)
-  protected def buildProperties(args: Array[String]): Properties = {
+  protected def processProperties(args: Array[String], input: File): Either[Int, Properties] = {
     val properties: Properties = new Properties
     Booklet.mergeWithFiles(properties,
       args.flatMap(f ⇒ if (f.startsWith("@")) file(f.drop(1)) else None): _*)
@@ -96,7 +113,23 @@ object Application {
         }
       }
     }
+    if (args.contains("-?") || args.contains("-h")) {
+      help()
+      return (Left(1))
+    }
+    if (args.contains("-s")) {
+      val storage = this.storage(input, properties)
+      implicit val expandedProperties = Booklet.merge(storage.baseBookletProperties, properties)
+      val userTemplatePath = new File(storage.base, storage.Settings.template)
+      storage.template.languages(expandedProperties).foreach { lang ⇒
+        val baseLang = new File(storage.base, lang)
+        val userTemplatePathLang = if (lang == storage.template.defaultLanguage) userTemplatePath else new File(baseLang, storage.Settings.template)
+        storage.writeTemplates(userTemplatePathLang, lang)
+      }
+      log.info("Wrote templates to " + userTemplatePath)
+      return (Left(0))
+    }
 
-    properties
+    Right(properties)
   }
 }
