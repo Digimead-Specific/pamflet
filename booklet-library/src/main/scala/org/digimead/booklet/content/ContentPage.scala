@@ -25,5 +25,5 @@ package org.digimead.booklet.content
 import org.digimead.booklet.discounter.Headers
 
 trait ContentPage extends AuthoredPage {
-  lazy val name = Headers.BlockNames.name(blocks)
+  lazy val name = Headers.BlockNames.name(blocks) getOrElse "Untitled"
 }

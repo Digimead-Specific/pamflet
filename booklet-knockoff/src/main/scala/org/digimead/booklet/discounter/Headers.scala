@@ -63,6 +63,6 @@ object Headers {
     def name(blocks: Seq[Block]) =
       blocks.view.collect {
         case h: Header ⇒ textOf(h.spans)
-      }.headOption.getOrElse { "Untitled" }
+      }.headOption
   }
 }

@@ -22,9 +22,13 @@
 
 package org.digimead.booklet.template
 
-import org.antlr.stringtemplate.StringTemplate
-import scala.collection.JavaConverters._
+import java.io.File
 import java.util.Properties
+
+import scala.collection.JavaConverters._
+
+import org.antlr.stringtemplate.StringTemplate
+import org.fusesource.scalate.TemplateEngine
 
 /**
  * Property like container that consists of a group of booklet template values.
@@ -50,5 +54,14 @@ class Template {
 }
 
 object Template {
+  /** Scalate engine. */
+  lazy val engine = new TemplateEngine
+  /** Temporary directory for booklet. */
+  lazy val tmpDirectory = {
+    val dir = new File(engine.tmpDirectory, "Booklet-" + System.currentTimeMillis() + System.nanoTime())
+    dir.mkdirs()
+    dir
+  }
+
   def apply() = new Template()
 }

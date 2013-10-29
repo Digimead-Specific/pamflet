@@ -22,13 +22,11 @@
 
 package org.digimead.booklet
 
-import java.io.{ File, FileOutputStream, InputStream, OutputStream, ByteArrayInputStream }
-import java.util.Properties
-
-import scala.annotation.tailrec
+import java.io.File
 
 import org.digimead.booklet.content.Content
 import org.digimead.booklet.content.Globalized
+import org.digimead.booklet.storage.Storage
 
 object Produce {
   def apply(globalized: Globalized, target: File) {
@@ -38,38 +36,12 @@ object Produce {
     }
   }
   def apply(contents: Content, globalized: Globalized, target: File) {
-    def writeString(path: String, contents: String, target: File) {
-      write(path, target, new ByteArrayInputStream(contents.getBytes("utf-8")))
-    }
-    def write(path: String, target: File, r: InputStream) {
-      val file = new File(target, path)
-      new File(file.getParent).mkdirs()
-      val w = new FileOutputStream(file)
-      copy(r, w)
-      r.close()
-      w.close()
-    }
-    def copy(r: InputStream, w: OutputStream) {
-      @tailrec def doCopy: Unit = {
-        val byte = r.read()
-        if (byte != -1) {
-          w.write(byte)
-          doCopy
-        }
-      }
-      doCopy
-      w.flush()
-    }
-    val manifest = "pamflet.manifest"
+    val manifest = "booklet.manifest"
     val offlineTarget = new File(target + "/offline/")
     val css = contents.css.map { case (nm, v) ⇒ ("css/" + nm, v) }.toList
-    val paths = filePaths(contents)
-    val files = contents.files.toList.map {
-      case (nm, u) ⇒ ("files/" + nm, u)
-    }
-    val favicon = contents.favicon.toList.map {
-      case u ⇒ ("favicon.ico", u)
-    }
+    val paths = Shared.resourcePaths(contents.prettifyLangs)
+    val files = contents.files.toList.map { case (nm, u) ⇒ ("files/" + nm, u) }
+    val favicon = contents.favicon.toList.map { case u ⇒ ("favicon.ico", u) }
 
     // generate the pages in target directory and in
     // subdirectory "offline" with html5 manifest
@@ -79,24 +51,15 @@ object Produce {
       val printer = Printer(contents, globalized, manifestOpt)
       contents.pages.foreach { page ⇒
         val pagePath = Printer.fileify(page)
-        writeString(pagePath, printer.print(page), targetDir)
+        Storage.writeString(pagePath, printer.print(page), targetDir)
       }
-      css.foreach {
-        case (path, contents) ⇒
-          writeString(path, contents, targetDir)
-      }
-
-      paths.foreach { path ⇒
-        write(path,
-          targetDir,
-          new java.net.URL(Shared.resources, path).openStream())
-      }
-
+      css.foreach { case (path, contents) ⇒ Storage.writeString(path, contents, targetDir) }
+      paths.foreach(path ⇒ Storage.write(path, targetDir, new java.net.URL(Shared.resources, path).openStream()))
       for ((path, uri) ← files ++ favicon)
-        write(path, targetDir, uri.toURL.openStream)
+        Storage.write(path, targetDir, uri.toURL.openStream)
     }
 
-    writeString(manifest, (
+    Storage.writeString(manifest, (
       "CACHE MANIFEST" ::
       // cache file must change between updates
       ("# " + new java.util.Date) ::
@@ -107,23 +70,4 @@ object Produce {
       paths).mkString("\n"),
       offlineTarget)
   }
-  def filePaths(contents: Content) =
-    ("fork.png" :: "twitter-bird-dark-bgs.png" :: Nil).map {
-      "img/" + _
-    } :::
-      ("pamflet.css" :: "pamflet-grid.css" :: "pamflet-print.css" ::
-        "color_scheme-redmond.css" :: "color_scheme-github.css" :: "color_scheme-monokai.css" :: Nil).map {
-          "css/" + _
-        } :::
-        ("screen.css" :: "grid.css" :: "print.css" :: "ie.css" :: Nil).map {
-          "css/blueprint/" + _
-        } :::
-        ("jquery-1.6.2.min.js" ::
-          "jquery.collapse.js" ::
-          "pamflet.js" :: Nil).map { "js/" + _ } :::
-          "css/prettify.css" ::
-          ("prettify.js" ::
-            contents.prettifyLangs.map { l ⇒ "lang-%s.js".format(l) }.toList).map {
-              "js/prettify/" + _
-            }
 }

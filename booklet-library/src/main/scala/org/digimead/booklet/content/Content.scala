@@ -43,14 +43,14 @@ case class Content(
         traverse(tail, head :: past)
       case Nil ⇒ past.reverse
     }
-  val pamflet = Section(rootSection.localPath,
+  val booklet = Section(rootSection.localPath,
     rootSection.blocks,
     rootSection.children :::
       DeepContents(template) ::
       ScrollPage(rootSection, template) ::
       Nil,
     rootSection.template)
-  val pages = traverse(pamflet.children, pamflet :: Nil)
-  val title = pamflet.name
+  val pages = traverse(booklet.children, booklet :: Nil)
+  val title = booklet.name
   val prettifyLangs = (Set.empty[String] /: pages) { _ ++ _.prettifyLangs }
 }

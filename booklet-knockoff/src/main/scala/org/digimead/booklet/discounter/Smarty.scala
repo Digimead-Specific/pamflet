@@ -36,9 +36,7 @@ import com.tristanhunt.knockoff.Text
 
 object Smarty {
   trait Discounter extends KDiscounter {
-    override def createSpanConverter(
-      linkDefinitions: Seq[LinkDefinitionChunk]) =
-      new KSpanConverter(linkDefinitions) with SpanConverter
+    override def createSpanConverter(linkDefinitions: Seq[LinkDefinitionChunk]) = new KSpanConverter(linkDefinitions) with SpanConverter
   }
   trait SpanConverter extends KSpanConverter {
     override def apply(chunk: Chunk): Seq[Span] = {

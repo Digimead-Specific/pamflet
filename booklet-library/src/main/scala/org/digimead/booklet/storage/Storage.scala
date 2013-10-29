@@ -22,50 +22,58 @@
 
 package org.digimead.booklet.storage
 
+import java.io.ByteArrayInputStream
 import java.io.File
-import java.io.FileInputStream
-import java.io.InputStreamReader
-import java.io.StringReader
-import java.nio.charset.Charset
+import java.io.FileOutputStream
+import java.io.InputStream
+import java.io.OutputStream
 import java.util.Properties
 
+import scala.annotation.tailrec
+
+import org.digimead.booklet.{ Booklet ⇒ Default }
 import org.digimead.booklet.content.Globalized
 
 trait Storage {
+  /** User provided properties. */
+  val properties: Properties
+  /** Globalized content. */
   def globalized: Globalized
 
-  /** Return consolidated properties. */
-  protected def mergeWithStrings(base: Properties, append: String*): Properties = {
-    val result = new java.util.Properties
-    result.putAll(base)
-    for (s ← append) {
-      val p = new java.util.Properties
-      val is = new StringReader(s)
-      try p.load(is) finally { try is.close() catch { case _: Throwable ⇒ } }
-      result.putAll(p)
-    }
-    result
-  }
-  /** Return consolidated properties. */
-  protected def mergeWithFiles(base: Properties, append: File*): Properties = {
-    val result = new java.util.Properties
-    result.putAll(base)
-    for (f ← append) {
-      val p = new java.util.Properties
-      val is = new InputStreamReader(new FileInputStream(f), Charset.forName("UTF-8"))
-      try p.load(is) finally { try is.close() catch { case _: Throwable ⇒ } }
-      result.putAll(p)
-    }
-    result
-  }
-  /** Return consolidated properties. */
-  protected def merge(base: Properties, append: Properties*): Properties = {
-    val result = new java.util.Properties
-    for (p ← base +: append) result.putAll(p)
-    result
+  /**
+   * Storage settings.
+   */
+  object Settings {
+    /** Name of the file with booklet properties. */
+    val properties = Option(Storage.this.properties.getProperty("properties")) getOrElse Default.properties
+    /** Name of the directory with booklet template. */
+    val template = Option(Storage.this.properties.getProperty("template")) getOrElse Default.template
+    /** Name of the file with index content. */
+    val indexMarkdown = Option(Storage.this.properties.getProperty("indexMarkdown")) getOrElse Default.indexMarkdown
   }
 }
 
 object Storage {
-  val bookletTemplate = "booklet.properties"
+  def copy(r: InputStream, w: OutputStream) {
+    @tailrec def doCopy: Unit = {
+      val byte = r.read()
+      if (byte != -1) {
+        w.write(byte)
+        doCopy
+      }
+    }
+    doCopy
+    w.flush()
+  }
+  def write(path: String, target: File, r: InputStream) {
+    val file = new File(target, path)
+    new File(file.getParent).mkdirs()
+    val w = new FileOutputStream(file)
+    copy(r, w)
+    r.close()
+    w.close()
+  }
+  def writeString(path: String, contents: String, target: File) {
+    write(path, target, new ByteArrayInputStream(contents.getBytes("UTF-8")))
+  }
 }

@@ -23,7 +23,10 @@
 package org.digimead.booklet
 
 import java.io.File
+import java.util.Properties
+
 import org.digimead.booklet.storage.FileStorage
+import org.slf4j.LoggerFactory
 
 class Application extends xsbti.AppMain {
   def run(config: xsbti.AppConfiguration) = Exit(Application.run(config.arguments))
@@ -31,45 +34,69 @@ class Application extends xsbti.AppMain {
 }
 
 object Application {
+  lazy val log = LoggerFactory.getLogger(getClass)
+
   def main(args: Array[String]) = System.exit(run(args))
-  def run(args: Array[String]) = {
-    args match {
-      case Array(Dir(input), Dir(output)) ⇒
-        Produce(storage(input).globalized, output)
-        println("Wrote pamflet to " + output)
-        0
-      case Array(Dir(dir)) ⇒ preview(dir)
-      case Array() ⇒
-        "docs" match {
-          case Dir(docs) ⇒ preview(docs)
-          case _ ⇒
-            println("""Usage: pf [SRC] [DEST]
+  def run(args: Array[String]) = args match {
+    case args if args.size >= 2 && args.takeRight(2).forall(dir(_).nonEmpty) ⇒
+      val Array(input, output) = args.takeRight(2).map(dir(_).get)
+      val properties = buildProperties(args.dropRight(2))
+      Produce(storage(input, properties).globalized, output)
+      log.info("Wrote booklet to " + output); 0
+    case args if args.size >= 1 && dir(args.last).nonEmpty ⇒
+      val input = dir(args.last).get
+      val properties = buildProperties(args.dropRight(1))
+      preview(input, properties)
+    case other ⇒
+      val properties = buildProperties(args)
+      dir("docs") match {
+        case Some(input) ⇒
+          preview(input, properties)
+        case _ ⇒
+          println("""Usage: pf [SRC] [DEST]
                     |
-                    |Default SRC is ./docs""".stripMargin)
-            1
-        }
-      case _ ⇒
-        println("Input paths must be directories")
-        1
-    }
+                    |Default SRC is ./docs""".stripMargin); 1
+      }
   }
-  def preview(dir: File) = {
-    Preview(storage(dir).globalized).run { server ⇒
+  def preview(input: File, properties: Properties) = {
+    Preview(storage(input, properties).globalized).run { server ⇒
       unfiltered.util.Browser.open(
         "http://127.0.0.1:%d/".format(server.port))
-      println("\nPreviewing `%s`. Press CTRL+C to stop.".format(dir))
-    }
-    0
+      println("\nPreviewing `%s`. Press CTRL+C to stop.".format(input.getName()))
+      if (properties.containsKey(Booklet.Options.optionVerbose))
+        log.info("Process " + input.getCanonicalPath())
+    }; 0
   }
 
-  private def storage(dir: File) = FileStorage(dir)
-
-  object Dir {
-    def unapply(path: String) = {
-      val file = new File(path)
-      if (file.exists && file.isDirectory)
-        Some(file)
-      else None
+  protected def dir(path: String) = new File(path) match {
+    case file if file.exists && file.isDirectory ⇒ Some(file)
+    case _ ⇒ None
+  }
+  protected def file(path: String) = new File(path) match {
+    case file if file.exists && file.isFile() ⇒ Some(file)
+    case _ ⇒ None
+  }
+  protected def storage(dir: File, properties: Properties) = FileStorage(dir, properties)
+  protected def buildProperties(args: Array[String]): Properties = {
+    val properties: Properties = new Properties
+    Booklet.mergeWithFiles(properties,
+      args.flatMap(f ⇒ if (f.startsWith("@")) file(f.drop(1)) else None): _*)
+    if (args.contains("-v")) {
+      properties.setProperty(Booklet.Options.optionVerbose, "Y")
+      println(properties.containsKey(Booklet.Options.optionVerbose))
+      if (args.filter(_ == "-v").size > 1) {
+        try {
+          val simpleLoggerClass = Class.forName("org.slf4j.impl.SimpleLogger")
+          val defaultLogLevelField = simpleLoggerClass.getDeclaredField("DEFAULT_LOG_LEVEL")
+          if (!defaultLogLevelField.isAccessible())
+            defaultLogLevelField.setAccessible(true)
+          defaultLogLevelField.setInt(null, 0)
+        } catch {
+          case e: ClassNotFoundException ⇒
+        }
+      }
     }
+
+    properties
   }
 }
