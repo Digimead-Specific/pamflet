@@ -41,12 +41,16 @@ object Booklet {
   val indexTemplate = "index.scaml"
   /** Name of the file with index content. */
   val indexMarkdown = "index.markdown"
-  /** Name of page template. */
-  val pageTemplate = "page.scaml"
   /** Name of file with booklet properties. */
   val properties = "booklet.properties"
   /** Name of directory with booklet template. */
   val template = "template"
+  /** Name of the file with template for PageContent. */
+  val templatePageContent = "pageContent.scaml"
+  /** Name of the file with template for DeepContents. */
+  val templatePageDeepContents = "pageDeepContents.scaml"
+  /** Name of the file with template for PageScroll. */
+  val templatePageScroll = "pageScroll.scaml"
 
   val log = LoggerFactory.getLogger(getClass)
 

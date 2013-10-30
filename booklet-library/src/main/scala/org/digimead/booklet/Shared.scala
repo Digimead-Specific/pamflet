@@ -37,8 +37,11 @@ object Shared {
   def resources = new java.net.URL(getClass.getResource("/template/marker"), ".")
   def resourcePaths(prettifyLangs: Set[String], withTemplates: Boolean = false) =
     {
+      val elements = ("CSS.scaml" :: "Comment.scaml" :: "Favicon.scaml" :: "GoogleAnalytics.scaml" ::
+        "LanguageBar.scaml" :: "PageNextNav.scaml" :: "PagePrevNav.scaml" :: "Prettify.scaml" :: "Twitter.scaml" :: Nil) map { "element/" + _ }
       if (withTemplates)
-        Booklet.pageTemplate :: Booklet.indexTemplate :: Booklet.indexMarkdown :: Nil
+        Booklet.templatePageContent :: Booklet.templatePageDeepContents :: Booklet.templatePageScroll ::
+          Booklet.indexTemplate :: Booklet.indexMarkdown :: "default.scaml" :: "toc.scaml" :: elements
       else
         Nil
     } ++ {

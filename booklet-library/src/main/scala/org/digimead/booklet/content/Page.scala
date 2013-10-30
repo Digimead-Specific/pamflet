@@ -24,6 +24,9 @@ package org.digimead.booklet.content
 
 import java.util.Properties
 
+import org.digimead.booklet.Outline
+import org.digimead.booklet.Printer
+import org.digimead.booklet.discounter.Headers
 import org.digimead.booklet.template.Template
 
 trait Page {
@@ -38,4 +41,46 @@ trait Page {
   def getProperty(key: String) = Option(properties.get(key)) map { _.toString }
   /** Set property for given key if present. */
   def setProperty(key: String, value: String) = properties.setProperty(key, value)
+}
+
+object Page {
+  /** Get visibility class of the table of contents. */
+  def tocVisibilityClass(page: Page): String = page match {
+    case DeepContents(_) | ScrollPage(_, _) ⇒
+      "show"
+    case _ ⇒
+      page.getProperty("toc") match {
+        case Some("hide") ⇒ "hide"
+        case Some("collapse") ⇒ "collap"
+        case _ ⇒ "show"
+      }
+  }
+  /** Get table of contents list. */
+  def tocList(page: Page, pages: Seq[Page]): xml.NodeSeq =
+    <ol class="toc">{
+      pages.map {
+        case link: ContentPage ⇒ <li>{ tocLine(page, link) }</li>
+        case link ⇒ <li class="generated">{ tocLine(page, link) }</li>
+      }
+    } </ol>
+  /** Get href link for table of contents. */
+  def tocHRef(page: Page, link: Page): String = page match {
+    case ScrollPage(_, _) ⇒ Headers.BlockNames.fragment(link.name)
+    case _ ⇒ Printer.webify(link)
+  }
+  /** Get line for table of contents. */
+  def tocLine(page: Page, link: Page): xml.NodeSeq = link match {
+    case link @ Section(_, blocks, children, _) ⇒ tocLink(page, link) ++ tocList(page, children)
+    case link ⇒ tocLink(page, link)
+  }
+  def tocLink(page: Page, link: Page): xml.NodeSeq =
+    if (link == page)
+      <div class="current">{ page.name }</div>
+    else
+      <div><a href={ tocHRef(page, link) }>{ link.name }</a></div> ++ {
+        (link, page) match {
+          case (page: ContentPage, c: DeepContents) ⇒ Outline(page)
+          case _ ⇒ Nil
+        }
+      }
 }

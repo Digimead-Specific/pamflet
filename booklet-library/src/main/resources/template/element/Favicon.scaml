@@ -1,0 +1,16 @@
+-import org.digimead.booklet.content.Content
+-import org.digimead.booklet.content.Globalized
+-import org.digimead.booklet.content.Page
+-@ val contents: Content
+-@ val globalized: Globalized
+-@ val page: Page
+-@ val relativeBase: String
+- contents.favicon match
+  - case Some(_) ⇒
+    %link(rel="shortcut icon" href="favicon.ico")
+  - case None ⇒
+    - if (!contents.isDefaultLang)
+      - globalized.defaultContents.favicon.map
+        - _ ⇒
+          %link(rel="shortcut icon" href="#{relativeBase}favicon.ico")
+

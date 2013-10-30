@@ -1,0 +1,8 @@
+-import org.digimead.booklet.content.AuthoredPage
+-import org.digimead.booklet.content.Page
+-import org.digimead.booklet.discounter.Discounter
+-@ val page: AuthoredPage
+- layout("default.scaml")
+  - if (Page.tocVisibilityClass(page) != "hide")
+    = render("toc.scaml")
+  = Discounter.toXHTML(page.blocks)

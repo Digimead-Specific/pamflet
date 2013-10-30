@@ -1,0 +1,6 @@
+-import org.digimead.booklet.content.Page
+-@ val page: Page
+- page.getProperty("twitter").map
+  - twt ⇒
+    :!javascript
+      Booklet.twitter = '#{twt}';

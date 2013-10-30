@@ -1,0 +1,56 @@
+-import org.digimead.booklet.content.Content
+-import org.digimead.booklet.content.DeepContents
+-import org.digimead.booklet.content.ContentPage
+-import org.digimead.booklet.content.ScrollPage
+-import org.digimead.booklet.content.Page
+-@ val bigScreen: String
+-@ val body: String
+-@ val colorScheme: String
+-@ val contents: Content
+-@ val page: Page
+-@ val relativeBase: String
+-@ val title: String = "Booklet untitled page"
+!!! 5
+%html
+  %head
+    %title #{title}
+    - render("element/Favicon.scaml")
+    %link(rel="stylesheet" href="#{relativeBase}css/blueprint/screen.css" type="text/css" media="screen, projection")
+    %link(rel="stylesheet" href="#{relativeBase}css/blueprint/grid.css" type="text/css" media="#{bigScreen}")
+    %link(rel="stylesheet" href="#{relativeBase}css/blueprint/print.css" type="text/css" media="print")
+    /[if lt IE 8]
+      %link(rel="stylesheet" href="#{relativeBase}css/blueprint/ie.css" type="text/css" media="screen, projection")
+    %link(rel="stylesheet" href="#{relativeBase}css/booklet.css" type="text/css" media="screen, projection")
+    %link(rel="stylesheet" href="#{relativeBase}css/booklet-print.css" type="text/css" media="print")
+    %link(rel="stylesheet" href="#{relativeBase}css/booklet-grid.css" type="text/css" media="#{bigScreen}")
+    %link(rel="stylesheet" href="#{relativeBase}css/color_scheme-redmond.css" type="text/css" media="screen, projection")
+    %link(rel="stylesheet" href="#{relativeBase}css/color_scheme-github.css" type="text/css" media="screen, projection")
+    %link(rel="stylesheet" href="#{relativeBase}css/color_scheme-monokai.css" type="text/css" media="screen, projection")
+    %script(type="text/javascript" src="#{relativeBase}js/jquery-1.6.2.min.js")
+    %script(type="text/javascript" src="#{relativeBase}js/jquery.collapse.js")
+    %script(type="text/javascript" src="#{relativeBase}js/booklet.js")
+    %script(type="text/javascript")
+      Booklet.page.language = '#{contents.language}'
+    %meta(charset="utf-8")
+    %meta(content="width=device-width, initial-scale=1" name="viewport")
+    %meta(http-equiv="Content-Type" content="text/html")
+    - render("element/Prettify.scaml")
+    - render("element/GoogleAnalytics.scaml")
+    - render("element/Twitter.scaml")
+    - render("element/CSS.scaml")
+  %body(class=colorScheme)
+    - render("element/PagePrevNav.scaml")
+    - render("element/PageNextNav.scaml")
+    .container
+      #{unescape(body)}
+    -for(repo <- page.getProperty("github"))
+      %a(href="http://github.com/#{repo}" class="fork nav")
+        %img(src="#{relativeBase}img/fork.png" alt="Fork me on GitHub")
+    -for(twt <- page.getProperty("twitter"))
+      %div(class="highlight-outer")
+        %div(class="highlight-menu")
+          %ul
+            %li
+              %button(id="highlight-button-twitter")
+                %img(src="#{relativeBase}img/twitter-bird-dark-bgs.png")
+

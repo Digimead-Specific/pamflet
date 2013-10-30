@@ -1,0 +1,35 @@
+-import org.digimead.booklet.Printer
+-import org.digimead.booklet.content.AuthoredPage
+-import org.digimead.booklet.content.Content
+-import org.digimead.booklet.content.Page
+-import org.digimead.booklet.discounter.Discounter
+-@ val arrow: String
+-@ val contents: Content
+-@ val next: Option[Page]
+-@ val page: AuthoredPage
+- layout("default.scaml")
+  .span-16.prepend-1.append-1
+    .span-16.top.nav
+      .span-16.title
+        %span<
+          =contents.title
+          -if (contents.title != page.name)
+            \- #{page.name}
+  .span-16.prepend-1.append-1.contents
+    = Discounter.toXHTML(page.blocks)
+  - next.map
+    - case next: AuthoredPage =>
+      .bottom.nav.span-16
+        %em<
+          Next Page
+        %span.arrow<
+          #{arrow}
+        %a(href={ Printer.webify(next) })<
+          #{next.name}
+        = render("element/LanguageBar.scaml")
+    - case _ =>
+      .bottom.nav.span-16
+        = render("element/LanguageBar.scaml")
+  = render("element/Comment.scaml")
+  - if (Page.tocVisibilityClass(page) != "hide")
+    = render("toc.scaml")

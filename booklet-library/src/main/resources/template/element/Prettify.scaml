@@ -1,0 +1,13 @@
+-import org.digimead.booklet.content.Page
+-@ val page: Page
+-@ val relativeBase: String
+- page.referencedLangs.find { _ ⇒ true }.map
+  - _ ⇒
+    %script(type="text/javascript" src="#{relativeBase}js/prettify/prettify.js")
+    - page.prettifyLangs.map
+      - l ⇒
+        %script(type="text/javascript" src="#{relativeBase}js/prettify/lang-#{l}.js")
+    %link(rel="stylesheet" href="#{relativeBase}css/prettify.css" type="text/css")
+    :javascript
+      window.onload=function() { prettyPrint(); };
+

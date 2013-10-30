@@ -197,9 +197,8 @@ class FileStorage(val base: File, val properties: Properties = new Properties) e
     val appTemplatePathLang = if (isDefaultLang) appTemplatePath else new File(appLang, Settings.template)
     val userTemplatePath = new File(base, Settings.template)
     val userTemplatePathLang = new File(baseLang, Settings.template)
-    val templateName = Option(properties.getProperty("templateName")) getOrElse {
-      if (baseBookletPropertiesFile.exists()) Booklet.pageTemplate else Booklet.indexTemplate
-    }
+    if (!properties.containsKey("index") && !baseBookletPropertiesFile.exists())
+      properties.setProperty("index", "Y")
 
     if (!appTemplatePath.exists()) {
       appTemplatePath.mkdir()
@@ -212,37 +211,53 @@ class FileStorage(val base: File, val properties: Properties = new Properties) e
     // Path with the base directory.
     properties.setProperty("basePath", base.getCanonicalPath())
 
-    // Path to the template file.
-    val templateFileDefault = new File(appTemplatePath, templateName)
-    val templateFileDefaultForLang = new File(appTemplatePathLang, templateName)
-    val templateFileCustom = new File(userTemplatePath, templateName)
-    val templateFileCustomForLang = if (isDefaultLang) templateFileCustom else new File(userTemplatePathLang, templateName)
-    if (templateFileCustomForLang.isFile())
-      properties.setProperty("templateFile", templateFileCustomForLang.getCanonicalPath())
-    else if (templateFileCustom.isFile())
-      properties.setProperty("templateFile", templateFileCustom.getCanonicalPath())
-    else if (templateFileDefaultForLang.isFile())
-      properties.setProperty("templateFile", templateFileDefaultForLang.getCanonicalPath())
-    else if (templateFileDefault.isFile())
-      properties.setProperty("templateFile", templateFileDefault.getCanonicalPath())
-    else
-      throw new IOException(s"Template file '${templateName}' not found.")
-
     // Path to the index markdown file.
-    val indexMarkdownFileDefault = new File(appTemplatePath, Settings.indexMarkdown)
-    val indexMarkdownFileDefaultForLang = new File(appTemplatePath, Settings.indexMarkdown)
-    val indexMarkdownFileCustom = new File(userTemplatePath, Settings.indexMarkdown)
-    val indexMarkdownFileCustomForLang = if (isDefaultLang) indexMarkdownFileCustom else new File(userTemplatePathLang, Settings.indexMarkdown)
-    if (indexMarkdownFileCustomForLang.isFile())
-      properties.setProperty("indexMarkdownFile", indexMarkdownFileCustomForLang.getCanonicalPath())
-    else if (indexMarkdownFileCustom.isFile())
-      properties.setProperty("indexMarkdownFile", indexMarkdownFileCustom.getCanonicalPath())
-    else if (indexMarkdownFileDefaultForLang.isFile())
-      properties.setProperty("indexMarkdownFile", indexMarkdownFileDefaultForLang.getCanonicalPath())
-    else if (indexMarkdownFileDefault.isFile())
-      properties.setProperty("indexMarkdownFile", indexMarkdownFileDefault.getCanonicalPath())
+    properties.setProperty("indexMarkdownFile",
+      findResource(Settings.indexMarkdown, appTemplatePath, appTemplatePathLang, userTemplatePath,
+        userTemplatePathLang, isDefaultLang) map (_.getCanonicalPath()) getOrElse {
+          throw new IOException(s"Index markdown file '${Settings.indexMarkdown}' not found.")
+        })
+    // Path to the index template file.
+    properties.setProperty("indexTemplateFile",
+      findResource(Settings.indexTemplate, appTemplatePath, appTemplatePathLang, userTemplatePath,
+        userTemplatePathLang, isDefaultLang) map (_.getCanonicalPath()) getOrElse {
+          throw new IOException(s"Template file '${Settings.indexTemplate}' not found.")
+        })
+    // Path to the templatePageContent file.
+    properties.setProperty("templatePageContentFile",
+      findResource(Settings.templatePageContent, appTemplatePath, appTemplatePathLang, userTemplatePath,
+        userTemplatePathLang, isDefaultLang) map (_.getCanonicalPath()) getOrElse {
+          throw new IOException(s"Template file '${Settings.templatePageContent}' not found.")
+        })
+    // Path to the templatePageDeepContents file.
+    properties.setProperty("templatePageDeepContentsFile",
+      findResource(Settings.templatePageDeepContents, appTemplatePath, appTemplatePathLang, userTemplatePath,
+        userTemplatePathLang, isDefaultLang) map (_.getCanonicalPath()) getOrElse {
+          throw new IOException(s"Template file '${Settings.templatePageDeepContents}' not found.")
+        })
+    // Path to the templatePageScroll file.
+    properties.setProperty("templatePageScrollFile",
+      findResource(Settings.templatePageScroll, appTemplatePath, appTemplatePathLang, userTemplatePath,
+        userTemplatePathLang, isDefaultLang) map (_.getCanonicalPath()) getOrElse {
+          throw new IOException(s"Template file '${Settings.templatePageScroll}' not found.")
+        })
+  }
+  protected def findResource(name: String, appTemplatePath: File, appTemplatePathLang: File,
+    userTemplatePath: File, userTemplatePathLang: File, defaultLang: Boolean): Option[File] = {
+    val fileDefault = new File(appTemplatePath, name)
+    val fileDefaultForLang = if (defaultLang) fileDefault else new File(appTemplatePathLang, name)
+    val fileCustom = new File(userTemplatePath, name)
+    val fileCustomForLang = if (defaultLang) fileCustom else new File(userTemplatePathLang, name)
+    if (fileCustomForLang.isFile())
+      Some(fileCustomForLang)
+    else if (fileCustom.isFile())
+      Some(fileCustom)
+    else if (fileDefaultForLang.isFile())
+      Some(fileDefaultForLang)
+    else if (fileDefault.isFile())
+      Some(fileDefault)
     else
-      throw new IOException(s"Index markdown file '${Settings.indexMarkdown}' not found.")
+      None
   }
 }
 

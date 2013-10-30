@@ -1,0 +1,5 @@
+-import org.digimead.booklet.content.Page
+-@ val page: Page
+- layout("default.scaml")
+  - if (Page.tocVisibilityClass(page) != "hide")
+    = render("toc.scaml")

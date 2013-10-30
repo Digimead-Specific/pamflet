@@ -44,9 +44,7 @@ object Preview {
     def fileResponse(lang: String, name: String) =
       responseStreamer(files(lang)(name))
     def pageResponse(lang: String, name: String) =
-      Printer(globalized(lang), globalized, None).printNamed(name).map { html ⇒
-        ResponseString(html)
-      }.getOrElse { NotFound }
+      Printer(globalized(lang), globalized, None).printNamed(name).map(Html5).getOrElse { NotFound }
 
     unfiltered.jetty.Http.anylocal.filter(unfiltered.filter.Planify {
       case GET(Path(Seg(lang :: Nil))) if languages.contains(lang) ⇒
@@ -88,4 +86,5 @@ object Preview {
         }
       }
     }
+  case class Html5(content: String) extends ComposeResponse(HtmlContent ~> ResponseString(content))
 }

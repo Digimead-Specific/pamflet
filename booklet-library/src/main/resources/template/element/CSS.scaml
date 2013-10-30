@@ -1,0 +1,15 @@
+-import org.digimead.booklet.content.Content
+-import org.digimead.booklet.content.Globalized
+-import org.digimead.booklet.content.Page
+-@ val contents: Content
+-@ val globalized: Globalized
+-@ val page: Page
+-@ val relativeBase: String
+- globalized.defaultContents.css.map
+  - case (filename, contents) ⇒
+    %link(rel="stylesheet" href="#{relativeBase}css/#{filename}" type="text/css" media="screen, projection")
+- if (!contents.isDefaultLang)
+  - contents.css.map
+    - case (filename, contents) ⇒
+      %link(rel="stylesheet" href="css/#{filename}" type="text/css" media="screen, projection")
+

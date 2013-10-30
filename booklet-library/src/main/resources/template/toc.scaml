@@ -1,0 +1,24 @@
+-import org.digimead.booklet.Outline
+-import org.digimead.booklet.content.Content
+-import org.digimead.booklet.content.ContentPage
+-import org.digimead.booklet.content.DeepContents
+-import org.digimead.booklet.content.Page
+-import org.digimead.booklet.content.ScrollPage
+-@ val contents: Content
+-@ val page: Page
+- val contentPage = contents.booklet
+-
+  val pages = page match {
+    case ScrollPage(_, _) ⇒ contents.booklet.children.collect { case cp: ContentPage ⇒ cp }
+    case _ ⇒ contents.booklet.children
+  }
+%div(class="tocwrapper #{Page.tocVisibilityClass(page)}")
+  %a.tochead.nav(style="display: none" href="#toc")<
+    ❦
+  %a(name="toc")/
+  %h4.toctitle<
+    Contents
+  .tocbody
+    =Page.tocLink(page, contentPage)
+    =Page.tocList(page, pages)
+
