@@ -28,6 +28,10 @@ import java.util.Properties
 object Settings {
   /** A name of the default language. */
   val defaultLanguageKey = "defaultLanguage"
+  /** An exclude regexp that applied to booklet folders. */
+  val excludeFolderKey = "excludeFolder"
+  /** An exclude regexp that applied to booklet markdowns. */
+  val excludeMarkdownKey = "excludeMarkdown"
   /** A name of the file with an index content. */
   val indexMarkdownKey = "indexMarkdown"
   /** Full path to indexMarkdown. */
@@ -69,6 +73,14 @@ object Settings {
   /** Set the name of the default language. */
   def defaultLanguage_=(arg: String)(implicit properties: Properties): Unit =
     properties.setProperty(defaultLanguageKey, arg)
+
+  /** Get the exclude folder regexp. */
+  def excludeFolder(implicit properties: Properties): Option[String] =
+    Option(properties.getProperty(excludeFolderKey))
+
+  /** Get the exclude markdown regexp. */
+  def excludeMarkdown(implicit properties: Properties): Option[String] =
+    Option(properties.getProperty(excludeMarkdownKey))
 
   /** Get index flag. */
   def index(implicit properties: Properties): Boolean =

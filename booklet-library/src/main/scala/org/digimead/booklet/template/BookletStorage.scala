@@ -134,15 +134,7 @@ class BookletStorage(val base: File, val properties: Properties = new Properties
   }
 
   protected def bookletSection(localPath: String, dir: File, lang: String)(implicit properties: Properties): Seq[Section] = {
-    val baseDirectoryForLang = new File(base, lang)
-    val templateDirectoryName = Settings.template
-    val files: List[File] = (Option(dir.listFiles) match {
-      case Some(files) ⇒ files.toList.filterNot(f ⇒ f.isDirectory() && f.getName() == templateDirectoryName &&
-        (f.getParentFile.getCanonicalFile() == base.getCanonicalFile() || f.getParentFile.getCanonicalFile() == baseDirectoryForLang))
-      case None ⇒ Nil
-    }).sortWith {
-      _.getName < _.getName
-    }
+    val files = getFiles(dir, lang)
     files.find(isMarkdown).map { head ⇒
       val blocks = knock(head)
       val childFiles = files.filterNot { _ == head } filterNot { f ⇒
@@ -156,21 +148,27 @@ class BookletStorage(val base: File, val properties: Properties = new Properties
               log.error(s"Markdown file '${f.getName}' is broken: " + e.getMessage(), e)
               None
           }
-        else
-          Some(bookletSection(localPath + "/" + f.getName, f, lang))
+        else {
+          Settings.excludeFolder match {
+            case Some(filter) ⇒
+              if (!filter.r.pattern.matcher(f.getName).matches)
+                Some(indexSection(localPath + "/" + f.getName, f, lang))
+              else {
+                log.debug(s"Skip folder '${f.getName}' because of filter /$filter/")
+                None
+              }
+            case None ⇒
+              Some(indexSection(localPath + "/" + f.getName, f, lang))
+          }
+        }
       }
       Section(localPath, blocks, children.flatten)
     }.toSeq
   }
   protected def indexSection(localPath: String, dir: File, lang: String)(implicit properties: Properties): Seq[Section] = {
-    val files: List[File] = (Option(dir.listFiles) match {
-      case None ⇒ Nil
-      case Some(files) ⇒ files.toList
-    }).sortWith {
-      _.getName < _.getName
-    }
     val blocks = knock(Settings.indexMarkdownLocation getOrElse
       { throw new IllegalStateException("Unable to find 'indexMarkdownLocation' property.") })
+    val files = getFiles(dir, lang)
     files.find(isMarkdown).map { head ⇒
       val childFiles = files.filterNot { f ⇒
         f.isDirectory && Settings.languages.contains(f.getName)
@@ -183,11 +181,50 @@ class BookletStorage(val base: File, val properties: Properties = new Properties
               log.error(s"Markdown file '${f.getName}' is broken: " + e.getMessage(), e)
               None
           }
-        else
-          Some(indexSection(localPath + "/" + f.getName, f, lang))
+        else {
+          Settings.excludeFolder match {
+            case Some(filter) ⇒
+              if (!filter.r.pattern.matcher(f.getName).matches)
+                Some(indexSection(localPath + "/" + f.getName, f, lang))
+              else {
+                log.debug(s"Skip folder '${f.getName}' because of filter /$filter/")
+                None
+              }
+            case None ⇒
+              Some(indexSection(localPath + "/" + f.getName, f, lang))
+          }
+        }
       }
       Section(localPath, blocks, children.flatten)
     }.toSeq
+  }
+  protected def getFiles(dir: File, lang: String)(implicit properties: Properties): List[File] = {
+    val baseDirectoryForLang = new File(base, lang)
+    val templateDirectoryName = Settings.template
+    Settings.excludeMarkdown match {
+      case Some(filter) ⇒
+        val rFilter = filter.r
+        (Option(dir.listFiles) match {
+          case Some(files) ⇒ files.toList.filterNot { f ⇒
+            f.isDirectory() && f.getName() == templateDirectoryName &&
+              (f.getParentFile.getCanonicalFile() == base.getCanonicalFile() || f.getParentFile.getCanonicalFile() == baseDirectoryForLang) || {
+                val skip = isMarkdown(f) && rFilter.findFirstMatchIn(f.getName()).nonEmpty
+                if (skip)
+                  log.debug(s"Skip markdown '${f.getName}' because of filter /$filter/")
+                skip
+              }
+          }
+          case None ⇒ Nil
+        }).sortWith(_.getName < _.getName)
+      case None ⇒
+        (Option(dir.listFiles) match {
+          case Some(files) ⇒ files.toList.filterNot { f ⇒
+            f.isDirectory() && f.getName() == templateDirectoryName &&
+              (f.getParentFile.getCanonicalFile() == base.getCanonicalFile() || f.getParentFile.getCanonicalFile() == baseDirectoryForLang)
+          }
+          case None ⇒ Nil
+        }).sortWith(_.getName < _.getName)
+    }
   }
   protected def isMarkdown(f: File) = (
     !f.isDirectory &&
