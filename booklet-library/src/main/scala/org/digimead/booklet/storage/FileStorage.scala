@@ -27,8 +27,9 @@ import java.io.IOException
 import java.util.Properties
 
 import org.digimead.booklet.Booklet
-import org.digimead.booklet.Frontin
-import org.digimead.booklet.Shared
+import org.digimead.booklet.template.Frontin
+import org.digimead.booklet.Settings
+import org.digimead.booklet.Resources
 import org.digimead.booklet.content.Content
 import org.digimead.booklet.content.Globalized
 import org.digimead.booklet.content.Leaf
@@ -41,7 +42,6 @@ import com.tristanhunt.knockoff.Block
 
 class FileStorage(val base: File, val properties: Properties = new Properties) extends Storage {
   val template = Template()
-  val baseBookletPropertiesFile = new File(base, Settings.properties)
   protected val log = LoggerFactory.getLogger(getClass)
 
   if (log.isDebugEnabled())
@@ -52,17 +52,18 @@ class FileStorage(val base: File, val properties: Properties = new Properties) e
    * If there is no template then storage consider as plain markdown index.
    */
   def baseBookletProperties: Properties = {
-    val properties = new Properties
-    implicit val result = if (baseBookletPropertiesFile.exists() &&
+    implicit val properties = Booklet.merge(new Properties, this.properties)
+    val result = if (baseBookletPropertiesFile.exists() &&
       baseBookletPropertiesFile.isFile() && baseBookletPropertiesFile.canRead())
       Booklet.mergeWithFiles(properties, baseBookletPropertiesFile)
     else
       properties
-    updateProperties(properties, template.defaultLanguage)
+    updateProperties(result, template.defaultLanguage)
     result
   }
+  def baseBookletPropertiesFile(implicit properties: Properties) = new File(base, Settings.templateProperties)
   def globalized = {
-    implicit val baseProperties = Booklet.merge(baseBookletProperties, properties)
+    implicit val baseProperties = baseBookletProperties
     if (log.isDebugEnabled())
       Booklet.dump(baseProperties, "Base properties(%d):")
 
@@ -76,7 +77,7 @@ class FileStorage(val base: File, val properties: Properties = new Properties) e
         val css = dir.listFiles.filter { _.getName.endsWith(".css") }.map { f ⇒ (f.getName, read(f)) }
         val files = dir.listFiles.filter(_.getName == "files").flatMap(_.listFiles.map { f ⇒ (f.getName, f.toURI) })
         val favicon = dir.listFiles.filter(_.getName == "favicon.ico").headOption.map { _.toURI }
-        val properties = if (isDefaultLang) baseProperties else new File(dir, Settings.properties) match {
+        val properties = if (isDefaultLang) baseProperties else new File(dir, Settings.templateProperties) match {
           case file if file.exists() && file.isFile() && file.canRead() ⇒ Booklet.merge(Booklet.mergeWithFiles(baseBookletProperties, file), this.properties)
           case _ ⇒ Booklet.merge(new Properties, baseProperties)
         }
@@ -91,7 +92,7 @@ class FileStorage(val base: File, val properties: Properties = new Properties) e
         val css = dir.listFiles.filter { _.getName.endsWith(".css") }.map { f ⇒ (f.getName, read(f)) }
         val files = dir.listFiles.filter(_.getName == "files").flatMap(_.listFiles.map { f ⇒ (f.getName, f.toURI) })
         val favicon = dir.listFiles.filter(_.getName == "favicon.ico").headOption.map { _.toURI }
-        val properties = if (isDefaultLang) baseProperties else new File(dir, Settings.properties) match {
+        val properties = if (isDefaultLang) baseProperties else new File(dir, Settings.templateProperties) match {
           case file if file.exists() && file.isFile() && file.canRead() ⇒ Booklet.merge(Booklet.mergeWithFiles(baseBookletProperties, file), this.properties)
           case _ ⇒ Booklet.merge(new Properties, baseProperties)
         }
@@ -127,9 +128,9 @@ class FileStorage(val base: File, val properties: Properties = new Properties) e
   def writeTemplates(target: File, lang: String)(implicit properties: Properties) {
     log.debug(s"Write templates to ${target.getCanonicalPath()} for '${lang}'.")
     if (lang == template.defaultLanguage)
-      Shared.writeTo(Shared.resourcePaths(Set(), true), target)
+      Resources.writeTo(Resources.paths(withTemplates = true), target)
     else
-      Shared.writeTo(Shared.resourcePaths(Set(), true), target, lang)
+      Resources.writeTo(Resources.paths(withTemplates = true), target, lang)
   }
 
   protected def bookletSection(template: Template, localPath: String, dir: File)(implicit properties: Properties): Seq[Section] = {
@@ -189,14 +190,19 @@ class FileStorage(val base: File, val properties: Properties = new Properties) e
     !f.getName.startsWith(".") &&
     (f.getName.endsWith(".markdown") || f.getName.endsWith(".md")))
   protected def updateProperties(properties: Properties, lang: String) {
-    implicit val bookletProperties = properties
+    implicit val implicitProperties = properties
     val isDefaultLang = lang == template.defaultLanguage
-    val baseLang = new File(base, lang)
-    val appLang = new File(Template.tmpDirectory, lang)
-    val appTemplatePath = new File(Template.tmpDirectory, Settings.template)
-    val appTemplatePathLang = if (isDefaultLang) appTemplatePath else new File(appLang, Settings.template)
+    val baseLang = if (isDefaultLang) base else new File(base, lang)
+    val app = Template.tmpDirectory
+    val appLang = if (isDefaultLang) Template.tmpDirectory else new File(Template.tmpDirectory, lang)
+    val appTemplatePath = new File(app, Settings.template)
+    val appTemplatePathLang = new File(appLang, Settings.template)
     val userTemplatePath = new File(base, Settings.template)
     val userTemplatePathLang = new File(baseLang, Settings.template)
+    val (templatePath, templatePathLang) = if (userTemplatePath.exists())
+      (userTemplatePath, userTemplatePathLang)
+    else
+      (appTemplatePath, appTemplatePathLang)
     if (!properties.containsKey("index") && !baseBookletPropertiesFile.exists())
       properties.setProperty("index", "Y")
 
@@ -212,50 +218,33 @@ class FileStorage(val base: File, val properties: Properties = new Properties) e
     properties.setProperty("basePath", base.getCanonicalPath())
 
     // Path to the index markdown file.
-    properties.setProperty("indexMarkdownFile",
-      findResource(Settings.indexMarkdown, appTemplatePath, appTemplatePathLang, userTemplatePath,
-        userTemplatePathLang, isDefaultLang) map (_.getCanonicalPath()) getOrElse {
-          throw new IOException(s"Index markdown file '${Settings.indexMarkdown}' not found.")
-        })
+    Settings.indexMarkdownLocation = findResource(Settings.indexMarkdown, templatePath, templatePathLang) getOrElse {
+      throw new IOException(s"Index markdown file '${Settings.indexMarkdown}' not found.")
+    }
     // Path to the index template file.
-    properties.setProperty("indexTemplateFile",
-      findResource(Settings.indexTemplate, appTemplatePath, appTemplatePathLang, userTemplatePath,
-        userTemplatePathLang, isDefaultLang) map (_.getCanonicalPath()) getOrElse {
-          throw new IOException(s"Template file '${Settings.indexTemplate}' not found.")
-        })
+    Settings.indexTemplateLocation = findResource(Settings.indexTemplate, templatePath, templatePathLang) getOrElse {
+      throw new IOException(s"Template file '${Settings.indexTemplate}' not found.")
+    }
     // Path to the templatePageContent file.
-    properties.setProperty("templatePageContentFile",
-      findResource(Settings.templatePageContent, appTemplatePath, appTemplatePathLang, userTemplatePath,
-        userTemplatePathLang, isDefaultLang) map (_.getCanonicalPath()) getOrElse {
-          throw new IOException(s"Template file '${Settings.templatePageContent}' not found.")
-        })
+    Settings.templatePageContentLocation = findResource(Settings.templatePageContent, templatePath, templatePathLang) getOrElse {
+      throw new IOException(s"Template file '${Settings.templatePageContent}' not found.")
+    }
     // Path to the templatePageDeepContents file.
-    properties.setProperty("templatePageDeepContentsFile",
-      findResource(Settings.templatePageDeepContents, appTemplatePath, appTemplatePathLang, userTemplatePath,
-        userTemplatePathLang, isDefaultLang) map (_.getCanonicalPath()) getOrElse {
-          throw new IOException(s"Template file '${Settings.templatePageDeepContents}' not found.")
-        })
+    Settings.templatePageDeepContentsLocation = findResource(Settings.templatePageDeepContents, templatePath, templatePathLang) getOrElse {
+      throw new IOException(s"Template file '${Settings.templatePageDeepContents}' not found.")
+    }
     // Path to the templatePageScroll file.
-    properties.setProperty("templatePageScrollFile",
-      findResource(Settings.templatePageScroll, appTemplatePath, appTemplatePathLang, userTemplatePath,
-        userTemplatePathLang, isDefaultLang) map (_.getCanonicalPath()) getOrElse {
-          throw new IOException(s"Template file '${Settings.templatePageScroll}' not found.")
-        })
+    Settings.templatePageScrollLocation = findResource(Settings.templatePageScroll, templatePath, templatePathLang) getOrElse {
+      throw new IOException(s"Template file '${Settings.templatePageScroll}' not found.")
+    }
   }
-  protected def findResource(name: String, appTemplatePath: File, appTemplatePathLang: File,
-    userTemplatePath: File, userTemplatePathLang: File, defaultLang: Boolean): Option[File] = {
-    val fileDefault = new File(appTemplatePath, name)
-    val fileDefaultForLang = if (defaultLang) fileDefault else new File(appTemplatePathLang, name)
-    val fileCustom = new File(userTemplatePath, name)
-    val fileCustomForLang = if (defaultLang) fileCustom else new File(userTemplatePathLang, name)
-    if (fileCustomForLang.isFile())
-      Some(fileCustomForLang)
-    else if (fileCustom.isFile())
-      Some(fileCustom)
-    else if (fileDefaultForLang.isFile())
-      Some(fileDefaultForLang)
-    else if (fileDefault.isFile())
-      Some(fileDefault)
+  protected def findResource(name: String, templatePath: File, templatePathLang: File): Option[File] = {
+    val file = new File(templatePath, name)
+    val fileForLang = new File(templatePathLang, name)
+    if (fileForLang.isFile())
+      Some(fileForLang)
+    else if (file.isFile())
+      Some(file)
     else
       None
   }

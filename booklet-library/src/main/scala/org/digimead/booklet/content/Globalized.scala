@@ -22,10 +22,11 @@
 
 package org.digimead.booklet.content
 
-import org.digimead.booklet.template.Template
 import java.util.Properties
 
-case class Globalized(contents: Map[String, Content], template: Template)(implicit baseProperties: Properties) {
+import org.digimead.booklet.template.Template
+
+case class Globalized(val contents: Map[String, Content], val template: Template)(implicit val baseProperties: Properties) {
   def apply(lang: String): Content = contents(lang)
   def defaultContents: Content = apply(defaultLanguage)
   def defaultLanguage: String = template.defaultLanguage

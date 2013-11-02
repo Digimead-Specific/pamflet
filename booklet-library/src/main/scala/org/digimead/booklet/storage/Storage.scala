@@ -43,9 +43,9 @@ trait Storage {
   /**
    * Storage settings.
    */
-  object Settings {
+  /*object Settings {
     /** Name of the file with index content. */
-    val indexMarkdown = Option(Storage.this.properties.getProperty("indexMarkdown")) getOrElse Default.indexMarkdown
+    val indexMarkdown = Option(Storage.this.properties.getProperty("indexMarkdown")) getOrElse Default.properties.indexMarkdown
     /** Name of the file with template for index. */
     val indexTemplate = Option(Storage.this.properties.getProperty("indexTemplate")) getOrElse Default.indexTemplate
     /** Name of the file with booklet properties. */
@@ -58,7 +58,7 @@ trait Storage {
     val templatePageDeepContents = Option(Storage.this.properties.getProperty("templatePageDeepContents")) getOrElse Default.templatePageDeepContents
     /** Name of the file with template for PageScroll. */
     val templatePageScroll = Option(Storage.this.properties.getProperty("templatePageScroll")) getOrElse Default.templatePageScroll
-  }
+  }*/
 }
 
 object Storage {

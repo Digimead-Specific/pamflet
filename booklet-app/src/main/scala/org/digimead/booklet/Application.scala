@@ -72,7 +72,7 @@ object Application {
       unfiltered.util.Browser.open(
         "http://127.0.0.1:%d/".format(server.port))
       println("\nPreviewing `%s`. Press CTRL+C to stop.".format(input.getName()))
-      if (properties.containsKey(Booklet.Options.optionVerbose))
+      if (Settings.optionVerbose(properties))
         log.info("Process " + input.getCanonicalPath())
     }; 0
   }
@@ -95,12 +95,11 @@ object Application {
   }
   protected def storage(dir: File, properties: Properties) = FileStorage(dir, properties)
   protected def processProperties(args: Array[String], input: File): Either[Int, Properties] = {
-    val properties: Properties = new Properties
-    Booklet.mergeWithFiles(properties,
+    val properties: Properties = Booklet.mergeWithFiles(new Properties,
       args.flatMap(f ⇒ if (f.startsWith("@")) file(f.drop(1)) else None): _*)
     if (args.contains("-v")) {
-      properties.setProperty(Booklet.Options.optionVerbose, "Y")
-      println(properties.containsKey(Booklet.Options.optionVerbose))
+      implicit val implicitProperties = properties
+      Settings.optionVerbose = true
       if (args.filter(_ == "-v").size > 1) {
         try {
           val simpleLoggerClass = Class.forName("org.slf4j.impl.SimpleLogger")
@@ -119,11 +118,11 @@ object Application {
     }
     if (args.contains("-s")) {
       val storage = this.storage(input, properties)
-      implicit val expandedProperties = Booklet.merge(storage.baseBookletProperties, properties)
-      val userTemplatePath = new File(storage.base, storage.Settings.template)
-      storage.template.languages(expandedProperties).foreach { lang ⇒
+      implicit val implicitProperties = Booklet.merge(storage.baseBookletProperties, properties)
+      val userTemplatePath = new File(storage.base, Settings.template)
+      storage.template.languages(implicitProperties).foreach { lang ⇒
         val baseLang = new File(storage.base, lang)
-        val userTemplatePathLang = if (lang == storage.template.defaultLanguage) userTemplatePath else new File(baseLang, storage.Settings.template)
+        val userTemplatePathLang = if (lang == storage.template.defaultLanguage) userTemplatePath else new File(baseLang, Settings.template)
         storage.writeTemplates(userTemplatePathLang, lang)
       }
       log.info("Wrote templates to " + userTemplatePath)

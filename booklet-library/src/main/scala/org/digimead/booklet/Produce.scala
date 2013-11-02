@@ -27,6 +27,7 @@ import java.io.File
 import org.digimead.booklet.content.Content
 import org.digimead.booklet.content.Globalized
 import org.digimead.booklet.storage.Storage
+import org.digimead.booklet.template.Printer
 
 object Produce {
   def apply(globalized: Globalized, target: File) {
@@ -39,7 +40,7 @@ object Produce {
     val manifest = "booklet.manifest"
     val offlineTarget = new File(target + "/offline/")
     val css = contents.css.map { case (nm, v) ⇒ ("css/" + nm, v) }.toList
-    val paths = Shared.resourcePaths(contents.prettifyLangs)
+    val paths = Resources.paths(contents.prettifyLangs)(globalized.baseProperties)
     val files = contents.files.toList.map { case (nm, u) ⇒ ("files/" + nm, u) }
     val favicon = contents.favicon.toList.map { case u ⇒ ("favicon.ico", u) }
 
@@ -54,7 +55,7 @@ object Produce {
         Storage.writeString(pagePath, printer.print(page), targetDir)
       }
       css.foreach { case (path, contents) ⇒ Storage.writeString(path, contents, targetDir) }
-      paths.foreach(path ⇒ Storage.write(path, targetDir, new java.net.URL(Shared.resources, path).openStream()))
+      paths.foreach(path ⇒ Storage.write(path, targetDir, new java.net.URL(Resources(), path).openStream()))
       for ((path, uri) ← files ++ favicon)
         Storage.write(path, targetDir, uri.toURL.openStream)
     }

@@ -20,7 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.digimead.booklet
+package org.digimead.booklet.template
 
 import org.digimead.booklet.content.AuthoredPage
 import org.digimead.booklet.discounter.Discounter

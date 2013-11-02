@@ -20,12 +20,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.digimead.booklet
-
-import java.io.File
+package org.digimead.booklet.template
 
 import scala.collection.JavaConversions._
 
+import org.digimead.booklet.Settings
 import org.digimead.booklet.content.Content
 import org.digimead.booklet.content.ContentPage
 import org.digimead.booklet.content.DeepContents
@@ -33,23 +32,23 @@ import org.digimead.booklet.content.Globalized
 import org.digimead.booklet.content.Page
 import org.digimead.booklet.content.ScrollPage
 import org.digimead.booklet.discounter.Headers
-import org.digimead.booklet.template.Template
 import org.slf4j.LoggerFactory
 
 case class Printer(contents: Content, globalized: Globalized, manifest: Option[String]) {
   protected val log = LoggerFactory.getLogger(getClass)
 
   def print(page: Page) = {
+    implicit val implicitProperties = page.properties
     val templateFile = page match {
       case page: ContentPage ⇒
-        new File(page.getProperty("templatePageContentFile") getOrElse
-          { throw new IllegalStateException("Unable to find 'templatePageContentFile' property.") })
+        Settings.templatePageContentLocation getOrElse
+          { throw new IllegalStateException("Unable to find 'templatePageContentLocation' property.") }
       case page: DeepContents ⇒
-        new File(page.getProperty("templatePageDeepContentsFile") getOrElse
-          { throw new IllegalStateException("Unable to find 'templatePageDeepContentsFile' property.") })
+        Settings.templatePageDeepContentsLocation getOrElse
+          { throw new IllegalStateException("Unable to find 'templatePageDeepContentsLocation' property.") }
       case page: ScrollPage ⇒
-        new File(page.getProperty("templatePageScrollFile") getOrElse
-          { throw new IllegalStateException("Unable to find 'templatePageScrollFile' property.") })
+        Settings.templatePageScrollLocation getOrElse
+          { throw new IllegalStateException("Unable to find 'templatePageScrollLocation' property.") }
     }
     log.info(s"Print '${page.name}' with template '${templateFile.getName()}'.")
     def lastnext(in: List[Page], last: Option[Page]): (Option[Page], Option[Page]) =
@@ -61,7 +60,7 @@ case class Printer(contents: Content, globalized: Globalized, manifest: Option[S
         case _ ⇒ (None, None)
       }
     val (prev, next) = lastnext(contents.pages, None)
-    val properties = Map(
+    val templateProperties = Map(
       "arrow" -> (page.getProperty("booklet.arrow") getOrElse "❧"),
       "bigScreen" -> "screen and (min-device-width: 800px), projection",
       "colorScheme" -> (page.getProperty("color_scheme") map { "color_scheme-" + _ } getOrElse "color_scheme-redmond"),
@@ -73,12 +72,12 @@ case class Printer(contents: Content, globalized: Globalized, manifest: Option[S
       "relativeBase" -> Printer.relative(globalized.defaultLanguage, contents, globalized),
       "title" -> "%s — %s".format(contents.title, page.name)) ++
       mapAsScalaMap(page.properties.asInstanceOf[java.util.Map[String, String]])
-    if (page.properties.containsKey(Booklet.Options.optionVerbose)) {
-      log.info(s"Booklet properties (${properties.size}) for '${page.name}' page:")
-      for ((k, v) ← properties.toSeq.sortBy(_._1))
+    if (Settings.optionVerbose) {
+      log.info(s"Booklet properties (${templateProperties.size}) for '${page.name}' page:")
+      for ((k, v) ← templateProperties.toSeq.sortBy(_._1))
         log.info(k + " -> " + v)
     }
-    Template.engine.layout(templateFile.getCanonicalPath(), properties)
+    Template.engine.layout(templateFile.getCanonicalPath(), templateProperties)
   }
   def named(name: String) = contents.pages.find(page ⇒ Printer.webify(page) == name)
   def printNamed(name: String) = named(name).map(print)

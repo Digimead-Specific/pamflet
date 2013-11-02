@@ -19,6 +19,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.digimead.booklet
 
 import java.io.File
@@ -37,21 +38,6 @@ import org.slf4j.LoggerFactory
  * Booklet singleton with default settings.
  */
 object Booklet {
-  /** Name of index template. */
-  val indexTemplate = "index.scaml"
-  /** Name of the file with index content. */
-  val indexMarkdown = "index.markdown"
-  /** Name of file with booklet properties. */
-  val properties = "booklet.properties"
-  /** Name of directory with booklet template. */
-  val template = "template"
-  /** Name of the file with template for PageContent. */
-  val templatePageContent = "pageContent.scaml"
-  /** Name of the file with template for DeepContents. */
-  val templatePageDeepContents = "pageDeepContents.scaml"
-  /** Name of the file with template for PageScroll. */
-  val templatePageScroll = "pageScroll.scaml"
-
   val log = LoggerFactory.getLogger(getClass)
 
   /** Dump properties */
@@ -90,8 +76,5 @@ object Booklet {
     val result = new java.util.Properties
     for (p ← base +: append) result.putAll(p)
     result
-  }
-  object Options {
-    val optionVerbose = "optionVerbose"
   }
 }

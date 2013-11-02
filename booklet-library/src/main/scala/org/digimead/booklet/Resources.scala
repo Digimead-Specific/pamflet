@@ -24,6 +24,9 @@ package org.digimead.booklet
 
 import java.io.File
 import java.io.IOException
+import java.util.Properties
+
+import scala.collection.immutable
 
 import org.digimead.booklet.storage.Storage
 import org.slf4j.LoggerFactory
@@ -31,17 +34,19 @@ import org.slf4j.LoggerFactory
 /**
  * Booklet resources.
  */
-object Shared {
+object Resources {
   val log = LoggerFactory.getLogger(getClass)
 
-  def resources = new java.net.URL(getClass.getResource("/template/marker"), ".")
-  def resourcePaths(prettifyLangs: Set[String], withTemplates: Boolean = false) =
+  def apply() = new java.net.URL(getClass.getResource("/template/marker"), ".")
+  def paths(prettifyLangs: Set[String] = Set("apollo", "css", "hs", "lisp", "lua", "ml",
+    "proto", "scala", "sql", "vb", "vhdl", "wiki", "yaml"), withTemplates: Boolean = false)(implicit properties: Properties) =
     {
       val elements = ("CSS.scaml" :: "Comment.scaml" :: "Favicon.scaml" :: "GoogleAnalytics.scaml" ::
         "LanguageBar.scaml" :: "PageNextNav.scaml" :: "PagePrevNav.scaml" :: "Prettify.scaml" :: "Twitter.scaml" :: Nil) map { "element/" + _ }
       if (withTemplates)
-        Booklet.templatePageContent :: Booklet.templatePageDeepContents :: Booklet.templatePageScroll ::
-          Booklet.indexTemplate :: Booklet.indexMarkdown :: "default.scaml" :: "toc.scaml" :: elements
+        Settings.templatePageContent :: Settings.templatePageDeepContents ::
+          Settings.templatePageScroll :: Settings.indexTemplate ::
+          Settings.indexMarkdown :: "default.scaml" :: "toc.scaml" :: elements
       else
         Nil
     } ++ {
@@ -52,18 +57,52 @@ object Shared {
     }.map { "css/" + _ } ::: {
       "screen.css" :: "grid.css" :: "print.css" :: "ie.css" :: Nil
     }.map { "css/blueprint/" + _ } ::: {
-      "jquery-1.6.2.min.js" :: "jquery.collapse.js" :: "booklet.js" :: "prettify.js" :: Nil
+      "jquery-1.6.2.min.js" :: "jquery.collapse.js" :: "booklet.js" :: Nil
     }.map { "js/" + _ } ::: {
-      prettifyLangs.map { l ⇒ "lang-%s.js".format(l) }.toList
+      "prettify.js" :: prettifyLangs.map { l ⇒ "lang-%s.js".format(l) }.toList
     }.map { "js/prettify/" + _ }
   def writeTo(paths: Seq[String], target: File, prefix: String = "") = {
     log.debug("Write resources to " + target.getCanonicalPath())
     val pathPrefix = if (prefix.endsWith("/") || prefix.isEmpty()) prefix else prefix + "/"
     paths.foreach { path ⇒
-      try Storage.write(path, target, new java.net.URL(Shared.resources, pathPrefix + path).openStream())
+      try Storage.write(path, target, new java.net.URL(Resources(), pathPrefix + path).openStream())
       catch {
         case e: IOException ⇒ log.debug(s"Skip ${pathPrefix + path}")
       }
     }
+  }
+
+  object Language {
+    // see http://en.wikipedia.org/wiki/IETF_language_tag
+    val languageNames: immutable.Map[String, String] = Map(
+      "ar" -> "العربية",
+      "bn" -> "বাংলা",
+      "ca" -> "Català",
+      "cs" -> "Čeština",
+      "de" -> "Deutsch",
+      "en" -> "English",
+      "es" -> "Español",
+      "fa" -> "فارسی",
+      "fi" -> "Suomi",
+      "fr" -> "Français",
+      "he" -> "עברית",
+      "hi" -> "हिन्दी",
+      "hu" -> "Magyar",
+      "id" -> "Bahasa Indonesia",
+      "it" -> "Italiano",
+      "ja" -> "日本語",
+      "ko" -> "한국어",
+      "nl" -> "Nederlands",
+      "no" -> "Norsk (Bokmål)",
+      "pl" -> "Polski",
+      "pt" -> "Português",
+      "ru" -> "Русский",
+      "sv" -> "Svenska",
+      "tr" -> "Türkçe",
+      "vi" -> "Tiếng Việt",
+      "uk" -> "Українська",
+      "zh" -> "中文")
+
+    def languageName(code: String): Option[String] = languageNames get code
   }
 }

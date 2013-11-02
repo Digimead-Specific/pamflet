@@ -20,7 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.digimead.booklet
+package org.digimead.booklet.template
 
 case class Frontin(header: Option[String], body: String)
 

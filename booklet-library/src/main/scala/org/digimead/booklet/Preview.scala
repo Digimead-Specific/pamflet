@@ -24,9 +24,9 @@ package org.digimead.booklet
 
 import java.io.OutputStream
 import java.net.URI
-import java.util.Properties
 
 import org.digimead.booklet.content.Globalized
+import org.digimead.booklet.template.Printer
 
 import unfiltered.request._
 import unfiltered.response._
@@ -71,7 +71,7 @@ object Preview {
         pageResponse(lang, name)
       case GET(Path(Seg(name :: Nil))) ⇒
         pageResponse(defaultLanguage, name)
-    }).resources(Shared.resources)
+    }).resources(Resources())
   }
   def responseStreamer(uri: URI) =
     new ResponseStreamer {

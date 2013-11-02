@@ -24,9 +24,9 @@ package org.digimead.booklet.content
 
 import java.util.Properties
 
-import org.digimead.booklet.Outline
-import org.digimead.booklet.Printer
+import org.digimead.booklet.template.Printer
 import org.digimead.booklet.discounter.Headers
+import org.digimead.booklet.template.Outline
 import org.digimead.booklet.template.Template
 
 trait Page {

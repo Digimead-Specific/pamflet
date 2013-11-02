@@ -22,7 +22,7 @@
 
 package org.digimead.booklet.content
 
-import org.digimead.booklet.Shared
+import org.digimead.booklet.Resources
 import org.digimead.booklet.discounter.Fenced
 
 import com.tristanhunt.knockoff.Block
@@ -36,7 +36,7 @@ trait AuthoredPage extends Page {
     }
   lazy val prettifyLangs = referencedLangs.filter { lang ⇒
     try {
-      new java.net.URL(Shared.resources,
+      new java.net.URL(Resources(),
         "js/prettify/lang-%s.js".format(lang)).openStream().close()
       true
     } catch {
