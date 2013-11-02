@@ -24,17 +24,21 @@ package org.digimead.booklet.content
 
 import java.util.Properties
 
-import org.digimead.booklet.template.Template
+import org.digimead.booklet.Settings
 
-case class Globalized(val contents: Map[String, Content], val template: Template) {
+case class Globalized(val contents: Map[String, Content]) {
   def apply(lang: String): Content = contents(lang)
   /** Default content. */
-  def content: Content = contents.find { case (lang, content) ⇒ lang == template.defaultLanguage(content.properties) }.
+  def content: Content = contents.find { case (lang, content) ⇒ lang == Settings.defaultLanguage(content.properties) }.
     map(_._2).getOrElse { throw new IllegalStateException("Unable to find default content.") }
   /** Default language. */
   def language: String = content.language
   /** All booklet languages. */
-  def languages: Seq[String] = template.languages(content.properties)
+  def languages: Seq[String] = Option(content.properties.get("languages")).map(_.toString()) match {
+    case Some(xs) ⇒ xs.split(",").toSeq map { _.trim }
+    case None ⇒ Seq(Settings.defaultLanguage(content.properties))
+  }
   /** Default properties. */
   def properties: Properties = content.properties
 }
+

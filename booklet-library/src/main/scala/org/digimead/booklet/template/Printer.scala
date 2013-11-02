@@ -22,8 +22,12 @@
 
 package org.digimead.booklet.template
 
+import java.util.Properties
+
 import scala.collection.JavaConversions._
 
+import org.antlr.stringtemplate.StringTemplate
+import org.digimead.booklet.Booklet
 import org.digimead.booklet.Settings
 import org.digimead.booklet.content.Content
 import org.digimead.booklet.content.ContentPage
@@ -34,7 +38,7 @@ import org.digimead.booklet.content.ScrollPage
 import org.digimead.booklet.discounter.Headers
 import org.slf4j.LoggerFactory
 
-case class Printer(content: Content, globalized: Globalized) {
+case class Printer(val content: Content, val globalized: Globalized) {
   protected val log = LoggerFactory.getLogger(getClass)
 
   def print(page: Page) = {
@@ -78,13 +82,28 @@ case class Printer(content: Content, globalized: Globalized) {
       for ((k, v) ← templateProperties.toSeq.sortBy(_._1))
         log.info(k + " -> " + v)
     }
-    Template.engine.layout(templateFile.getCanonicalPath(), templateProperties)
+    Booklet.engine.layout(templateFile.getCanonicalPath(), templateProperties)
   }
   def named(name: String) = content.pages.find(page ⇒ Printer.webify(page) == name)
   def printNamed(name: String) = named(name).map(print)
 }
 
 object Printer {
+  /**
+   * Get HTML file name.
+   * File names shouldn't be url encoded, just space converted.
+   */
+  def fileify(page: Page) =
+    (page.getProperty("out") getOrElse {
+      page.name + ".html"
+    }).replace(' ', '+')
+  /** Replace template values in input stream with bound properties. */
+  def process(input: CharSequence)(implicit properties: Properties) = {
+    val st = new StringTemplate
+    st.setTemplate(input.toString)
+    st.setAttributes(properties)
+    st.toString
+  }
   def relative(lang: String, contents: Content, globalized: Globalized): String =
     if (contents.isDefaultLang) {
       if (lang == globalized.language) "" else lang + "/"
@@ -95,9 +114,4 @@ object Printer {
     Headers.BlockNames.encode(page.getProperty("out") getOrElse {
       page.name + ".html"
     })
-  /** File names shouldn't be url encoded, just space converted */
-  def fileify(page: Page) =
-    (page.getProperty("out") getOrElse {
-      page.name + ".html"
-    }).replace(' ', '+')
 }

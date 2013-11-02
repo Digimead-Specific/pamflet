@@ -24,8 +24,8 @@ package org.digimead.booklet.content
 
 import java.util.Properties
 
-import org.digimead.booklet.template.Template
-
 import com.tristanhunt.knockoff.Block
 
-case class Section(val localPath: String, val blocks: Seq[Block], val children: List[Page], val template: Template)(implicit val properties: Properties) extends ContentPage
+case class Section(val localPath: String, val blocks: Seq[Block], val children: List[Page])(implicit val properties: Properties) extends ContentPage {
+  override def toString() = s"Section('$name', path: ${localPath}, blocks: ${blocks.size}, children: ${children.size})"
+}

@@ -24,17 +24,15 @@ package org.digimead.booklet.content
 
 import java.util.Properties
 
-import org.digimead.booklet.template.Template
-
 import com.tristanhunt.knockoff.Block
 
-case class ScrollPage(val root: Section, val template: Template)(implicit val properties: Properties) extends AuthoredPage {
+case class ScrollPage(val root: Section)(implicit val properties: Properties) extends AuthoredPage {
   val name = "Combined Pages"
   val localPath = name
   def flatten(pages: List[Page]): Seq[Block] =
     pages.view.flatMap {
-      case Leaf(_, blocks, _) ⇒ blocks
-      case Section(_, blocks, children, _) ⇒
+      case Leaf(_, blocks) ⇒ blocks
+      case Section(_, blocks, children) ⇒
         blocks ++: flatten(children)
       case _ ⇒ Seq.empty
     }

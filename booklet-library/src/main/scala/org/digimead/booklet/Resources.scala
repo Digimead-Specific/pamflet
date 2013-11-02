@@ -28,7 +28,7 @@ import java.util.Properties
 
 import scala.collection.immutable
 
-import org.digimead.booklet.storage.Storage
+import org.digimead.booklet.template.Storage
 import org.slf4j.LoggerFactory
 
 /**

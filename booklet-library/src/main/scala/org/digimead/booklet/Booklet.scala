@@ -34,6 +34,7 @@ import scala.collection.JavaConverters._
 
 import org.digimead.booklet.content.Content
 import org.digimead.booklet.template.Printer
+import org.fusesource.scalate.TemplateEngine
 import org.slf4j.LoggerFactory
 
 /**
@@ -41,6 +42,14 @@ import org.slf4j.LoggerFactory
  */
 object Booklet {
   val log = LoggerFactory.getLogger(getClass)
+  /** Scalate engine. */
+  lazy val engine = new TemplateEngine
+  /** Temporary directory for booklet. */
+  lazy val tmpDirectory = {
+    val dir = new File(engine.tmpDirectory, "Booklet-" + System.currentTimeMillis() + System.nanoTime())
+    dir.mkdirs()
+    dir
+  }
 
   /** Dump properties. */
   def dump(properties: Properties, header: String = "Booklet properties (%d):") = synchronized {
@@ -49,7 +58,7 @@ object Booklet {
     for (key ← keys.sorted)
       log.info(key + " -> " + properties.getProperty(key))
   }
-  /** Get booklet manifest. */
+  /** Get booklet manifest for offline usage. */
   def manifest(contents: Content): String = {
     val css = contents.css.map { case (nm, v) ⇒ ("css/" + nm, v) }.toList
     val favicon = contents.favicon.toList.map { case u ⇒ ("favicon.ico", u) }

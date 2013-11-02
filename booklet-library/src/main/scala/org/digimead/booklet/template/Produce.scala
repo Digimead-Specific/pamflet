@@ -20,14 +20,15 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.digimead.booklet
+package org.digimead.booklet.template
 
 import java.io.File
 
+import org.digimead.booklet.Booklet
+import org.digimead.booklet.Resources
+import org.digimead.booklet.Settings
 import org.digimead.booklet.content.Content
 import org.digimead.booklet.content.Globalized
-import org.digimead.booklet.storage.Storage
-import org.digimead.booklet.template.Printer
 
 object Produce {
   def apply(globalized: Globalized, target: File): Unit = globalized.languages foreach { lang ⇒

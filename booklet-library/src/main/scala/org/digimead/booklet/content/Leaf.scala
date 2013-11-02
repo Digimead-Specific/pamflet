@@ -25,14 +25,11 @@ package org.digimead.booklet.content
 import java.util.Properties
 
 import org.digimead.booklet.discounter.Headers
-import org.digimead.booklet.template.Template
 
 import com.tristanhunt.knockoff.Block
 
-case class Leaf(val localPath: String, val blocks: Seq[Block], val template: Template)(implicit val properties: Properties) extends ContentPage {
+case class Leaf(val localPath: String, val blocks: Seq[Block])(implicit val properties: Properties) extends ContentPage {
   override lazy val name = Headers.BlockNames.name(blocks) getOrElse s"Untitled (${localPath.split("""/""").last})"
-}
 
-object Leaf {
-  def apply(localPath: String, t: (Seq[Block], Template))(implicit baseProperties: Properties): Leaf = Leaf(localPath, t._1, t._2)
+  override def toString() = s"Leaf('$name', path: ${localPath}, blocks: ${blocks.size})"
 }

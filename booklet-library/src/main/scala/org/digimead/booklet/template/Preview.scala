@@ -20,18 +20,23 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.digimead.booklet
+package org.digimead.booklet.template
 
 import java.io.OutputStream
 import java.net.URI
 
+import org.digimead.booklet.Booklet
+import org.digimead.booklet.Resources
+import org.digimead.booklet.Settings
 import org.digimead.booklet.content.Globalized
-import org.digimead.booklet.template.Printer
+import org.slf4j.LoggerFactory
 
 import unfiltered.request._
 import unfiltered.response._
 
 object Preview {
+  lazy val log = LoggerFactory.getLogger(getClass)
+
   def apply(globalized: ⇒ Globalized) = {
     def css(lang: String) = Map.empty ++ globalized(lang).css
     def files(lang: String) = Map.empty ++ globalized(lang).files
@@ -51,6 +56,9 @@ object Preview {
         Printer(globalized(lang), globalized).printNamed(name)
       result.map(Html5).getOrElse { NotFound }
     }
+
+    log.info("Warm up Scalate engine.")
+    globalized(defaultLanguage).pages.headOption.map { page ⇒ pageResponse(defaultLanguage, page.name) }
 
     unfiltered.jetty.Http.anylocal.filter(unfiltered.filter.Planify {
       case GET(Path(Seg(lang :: Nil))) if languages.contains(lang) ⇒

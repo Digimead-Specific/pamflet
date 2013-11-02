@@ -25,19 +25,16 @@ package org.digimead.booklet.content
 import java.net.URI
 import java.util.Properties
 
-import org.digimead.booklet.template.Template
-
 case class Content(
   val language: String,
   val isDefaultLang: Boolean,
   val rootSection: Section,
   val css: Seq[(String, String)],
   val files: Seq[(String, URI)],
-  val favicon: Option[URI],
-  val template: Template)(implicit val properties: Properties) {
+  val favicon: Option[URI])(implicit val properties: Properties) {
   def traverse(incoming: List[Page], past: List[Page]): List[Page] =
     incoming match {
-      case (head @ Section(_, _, _, _)) :: tail ⇒
+      case (head @ Section(_, _, _)) :: tail ⇒
         traverse(head.children ::: tail, head :: past)
       case head :: tail ⇒
         traverse(tail, head :: past)
@@ -46,10 +43,9 @@ case class Content(
   val booklet = Section(rootSection.localPath,
     rootSection.blocks,
     rootSection.children :::
-      DeepContents(template) ::
-      ScrollPage(rootSection, template) ::
-      Nil,
-    rootSection.template)
+      DeepContents() ::
+      ScrollPage(rootSection) ::
+      Nil)
   val pages = traverse(booklet.children, booklet :: Nil)
   val title = booklet.name
   val prettifyLangs = (Set.empty[String] /: pages) { _ ++ _.prettifyLangs }

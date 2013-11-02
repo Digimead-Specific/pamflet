@@ -9,7 +9,7 @@
 - val contentPage = content.booklet
 -
   val pages = page match {
-    case ScrollPage(_, _) ⇒ content.booklet.children.collect { case cp: ContentPage ⇒ cp }
+    case ScrollPage(_) ⇒ content.booklet.children.collect { case cp: ContentPage ⇒ cp }
     case _ ⇒ content.booklet.children
   }
 %div(class="tocwrapper #{Page.tocVisibilityClass(page)}")

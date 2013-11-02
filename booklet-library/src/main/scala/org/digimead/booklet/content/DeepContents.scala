@@ -24,9 +24,7 @@ package org.digimead.booklet.content
 
 import java.util.Properties
 
-import org.digimead.booklet.template.Template
-
-case class DeepContents(val template: Template)(implicit val properties: Properties) extends Page {
+case class DeepContents()(implicit val properties: Properties) extends Page {
   val name = "Contents in Depth"
   val localPath = name
   def prettifyLangs = Set.empty

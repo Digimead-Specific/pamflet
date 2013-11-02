@@ -20,28 +20,25 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.digimead.booklet.storage
+package org.digimead.booklet.template
 
 import java.io.File
 import java.io.IOException
 import java.util.Properties
 
 import org.digimead.booklet.Booklet
-import org.digimead.booklet.template.Frontin
-import org.digimead.booklet.Settings
 import org.digimead.booklet.Resources
+import org.digimead.booklet.Settings
 import org.digimead.booklet.content.Content
 import org.digimead.booklet.content.Globalized
 import org.digimead.booklet.content.Leaf
 import org.digimead.booklet.content.Section
 import org.digimead.booklet.discounter.Discounter
-import org.digimead.booklet.template.Template
 import org.slf4j.LoggerFactory
 
 import com.tristanhunt.knockoff.Block
 
-class FileStorage(val base: File, val properties: Properties = new Properties) extends Storage {
-  val template = Template()
+class BookletStorage(val base: File, val properties: Properties = new Properties) extends Storage {
   protected val log = LoggerFactory.getLogger(getClass)
 
   if (log.isDebugEnabled())
@@ -60,7 +57,7 @@ class FileStorage(val base: File, val properties: Properties = new Properties) e
       Booklet.mergeWithFiles(new Properties, baseBookletPropertiesFile)
     else
       properties
-    updateProperties(result, template.defaultLanguage)
+    updateProperties(result, Settings.defaultLanguage)
     result
   }
   def baseBookletPropertiesFile(implicit properties: Properties) = new File(base, Settings.templateProperties)
@@ -69,10 +66,10 @@ class FileStorage(val base: File, val properties: Properties = new Properties) e
     if (log.isDebugEnabled())
       Booklet.dump(baseProperties, "Base properties(%d):")
 
-    val contents = if (baseBookletPropertiesFile.exists()) {
+    val contents = if (!Settings.index) {
       log.debug("Process storage as booklets.")
-      template.languages map { lang ⇒
-        val isDefaultLang = lang == template.defaultLanguage
+      Settings.languages map { lang ⇒
+        val isDefaultLang = lang == Settings.defaultLanguage
         val dir = if (isDefaultLang) base else new File(base, lang)
         if (!dir.isDirectory())
           throw new IOException("Unable to read " + dir.getCanonicalPath())
@@ -83,13 +80,13 @@ class FileStorage(val base: File, val properties: Properties = new Properties) e
           case file if file.exists() && file.isFile() && file.canRead() ⇒ Booklet.merge(Booklet.mergeWithFiles(baseBookletProperties, file), this.properties)
           case _ ⇒ Booklet.merge(new Properties, baseProperties)
         }
-        updateProperties(properties, template.defaultLanguage)
-        lang -> Content(lang, isDefaultLang, rootSection(template, dir)(properties), css, files, favicon, template)
+        updateProperties(properties, Settings.defaultLanguage)
+        lang -> Content(lang, isDefaultLang, rootSection(dir, lang)(properties), css, files, favicon)
       }
     } else {
       log.debug("Process storage as index of raw markdowns.")
-      template.languages map { lang ⇒
-        val isDefaultLang = lang == template.defaultLanguage
+      Settings.languages map { lang ⇒
+        val isDefaultLang = lang == Settings.defaultLanguage
         val dir = if (isDefaultLang) base else new File(base, lang)
         val css = dir.listFiles.filter { _.getName.endsWith(".css") }.map { f ⇒ (f.getName, read(f)) }
         val files = dir.listFiles.filter(_.getName == "files").flatMap(_.listFiles.map { f ⇒ (f.getName, f.toURI) })
@@ -98,29 +95,30 @@ class FileStorage(val base: File, val properties: Properties = new Properties) e
           case file if file.exists() && file.isFile() && file.canRead() ⇒ Booklet.merge(Booklet.mergeWithFiles(baseBookletProperties, file), this.properties)
           case _ ⇒ Booklet.merge(new Properties, baseProperties)
         }
-        lang -> Content(lang, isDefaultLang, indexSection(template, dir)(properties), css, files, favicon, template)
+        updateProperties(properties, Settings.defaultLanguage)
+        lang -> Content(lang, isDefaultLang, indexSection(dir, lang)(properties), css, files, favicon)
       }
     }
-    Globalized(Map(contents: _*), template)
+    Globalized(Map(contents: _*))
   }
-  def indexSection(template: Template, dir: File)(implicit properties: Properties): Section = {
-    def emptySection = Section("", Seq.empty, Nil, template)
+  def indexSection(dir: File, lang: String)(implicit properties: Properties): Section = {
+    def emptySection = Section("", Seq.empty, Nil)
     if (dir.exists)
-      indexSection(template, "", dir).headOption getOrElse emptySection
+      indexSection("", dir, lang).headOption getOrElse emptySection
     else
       emptySection
   }
-  def rootSection(template: Template, dir: File)(implicit properties: Properties): Section = {
-    def emptySection = Section("", Seq.empty, Nil, template)
+  def rootSection(dir: File, lang: String)(implicit properties: Properties): Section = {
+    def emptySection = Section("", Seq.empty, Nil)
     if (dir.exists)
-      bookletSection(template, "", dir).headOption getOrElse emptySection
+      bookletSection("", dir, lang).headOption getOrElse emptySection
     else
       emptySection
   }
   def read(file: File) = scala.io.Source.fromFile(file).mkString("")
-  def knock(template: Template, file: File)(implicit properties: Properties): Seq[Block] = {
+  def knock(file: File)(implicit properties: Properties): Seq[Block] = {
     val frontin = Frontin(read(file))
-    try Discounter.knockoff(template(frontin body)(Booklet.mergeWithStrings(properties, frontin.header.toSeq: _*)))
+    try Discounter.knockoff(Printer.process(frontin body)(Booklet.mergeWithStrings(properties, frontin.header.toSeq: _*)))
     catch {
       case e: Throwable ⇒
         Console.err.println("Error while processing " + file.toString)
@@ -129,62 +127,66 @@ class FileStorage(val base: File, val properties: Properties = new Properties) e
   }
   def writeTemplates(target: File, lang: String)(implicit properties: Properties) {
     log.debug(s"Write templates to ${target.getCanonicalPath()} for '${lang}'.")
-    if (lang == template.defaultLanguage)
+    if (lang == Settings.defaultLanguage)
       Resources.writeTo(Resources.paths(withTemplates = true), target)
     else
       Resources.writeTo(Resources.paths(withTemplates = true), target, lang)
   }
 
-  protected def bookletSection(template: Template, localPath: String, dir: File)(implicit properties: Properties): Seq[Section] = {
+  protected def bookletSection(localPath: String, dir: File, lang: String)(implicit properties: Properties): Seq[Section] = {
+    val baseDirectoryForLang = new File(base, lang)
+    val templateDirectoryName = Settings.template
     val files: List[File] = (Option(dir.listFiles) match {
+      case Some(files) ⇒ files.toList.filterNot(f ⇒ f.isDirectory() && f.getName() == templateDirectoryName &&
+        (f.getParentFile.getCanonicalFile() == base.getCanonicalFile() || f.getParentFile.getCanonicalFile() == baseDirectoryForLang))
       case None ⇒ Nil
-      case Some(files) ⇒ files.toList
     }).sortWith {
       _.getName < _.getName
     }
     files.find(isMarkdown).map { head ⇒
-      val blocks = knock(template, head)
+      val blocks = knock(head)
       val childFiles = files.filterNot { _ == head } filterNot { f ⇒
-        f.isDirectory && template.languages.contains(f.getName)
+        f.isDirectory && Settings.languages.contains(f.getName)
       }
       val children = childFiles.flatMap { f ⇒
         if (isMarkdown(f))
-          try Some(Seq(Leaf(localPath + "/" + f.getName, (knock(template, f), template))))
+          try Some(Seq(Leaf(localPath + "/" + f.getName, knock(f))))
           catch {
             case e: Throwable ⇒
               log.error(s"Markdown file '${f.getName}' is broken: " + e.getMessage(), e)
               None
           }
         else
-          Some(bookletSection(template, localPath + "/" + f.getName, f))
+          Some(bookletSection(localPath + "/" + f.getName, f, lang))
       }
-      Section(localPath, blocks, children.flatten, template)
+      Section(localPath, blocks, children.flatten)
     }.toSeq
   }
-  protected def indexSection(template: Template, localPath: String, dir: File)(implicit properties: Properties): Seq[Section] = {
+  protected def indexSection(localPath: String, dir: File, lang: String)(implicit properties: Properties): Seq[Section] = {
     val files: List[File] = (Option(dir.listFiles) match {
       case None ⇒ Nil
       case Some(files) ⇒ files.toList
     }).sortWith {
       _.getName < _.getName
     }
-    val blocks = knock(template, new File(properties.getProperty("indexMarkdownFile")))
+    val blocks = knock(Settings.indexMarkdownLocation getOrElse
+      { throw new IllegalStateException("Unable to find 'indexMarkdownLocation' property.") })
     files.find(isMarkdown).map { head ⇒
       val childFiles = files.filterNot { f ⇒
-        f.isDirectory && template.languages.contains(f.getName)
+        f.isDirectory && Settings.languages.contains(f.getName)
       }
       val children = childFiles.flatMap { f ⇒
         if (isMarkdown(f))
-          try Some(Seq(Leaf(localPath + "/" + f.getName, (knock(template, f), template))))
+          try Some(Seq(Leaf(localPath + "/" + f.getName, knock(f))))
           catch {
             case e: Throwable ⇒
               log.error(s"Markdown file '${f.getName}' is broken: " + e.getMessage(), e)
               None
           }
         else
-          Some(indexSection(template, localPath + "/" + f.getName, f))
+          Some(indexSection(localPath + "/" + f.getName, f, lang))
       }
-      Section(localPath, blocks, children.flatten, template)
+      Section(localPath, blocks, children.flatten)
     }.toSeq
   }
   protected def isMarkdown(f: File) = (
@@ -193,10 +195,10 @@ class FileStorage(val base: File, val properties: Properties = new Properties) e
     (f.getName.endsWith(".markdown") || f.getName.endsWith(".md")))
   protected def updateProperties(properties: Properties, lang: String) {
     implicit val implicitProperties = properties
-    val isDefaultLang = lang == template.defaultLanguage
+    val isDefaultLang = lang == Settings.defaultLanguage
     val baseLang = if (isDefaultLang) base else new File(base, lang)
-    val app = Template.tmpDirectory
-    val appLang = if (isDefaultLang) Template.tmpDirectory else new File(Template.tmpDirectory, lang)
+    val app = Booklet.tmpDirectory
+    val appLang = if (isDefaultLang) Booklet.tmpDirectory else new File(Booklet.tmpDirectory, lang)
     val appTemplatePath = new File(app, Settings.template)
     val appTemplatePathLang = new File(appLang, Settings.template)
     val userTemplatePath = new File(base, Settings.template)
@@ -205,8 +207,6 @@ class FileStorage(val base: File, val properties: Properties = new Properties) e
       (userTemplatePath, userTemplatePathLang)
     else
       (appTemplatePath, appTemplatePathLang)
-    if (!properties.containsKey("index") && !baseBookletPropertiesFile.exists())
-      properties.setProperty("index", "Y")
 
     if (!appTemplatePath.exists()) {
       appTemplatePath.mkdir()
@@ -252,6 +252,6 @@ class FileStorage(val base: File, val properties: Properties = new Properties) e
   }
 }
 
-object FileStorage {
-  def apply(base: File, properties: Properties = new Properties) = new FileStorage(base, properties)
+object BookletStorage {
+  def apply(base: File, properties: Properties = new Properties) = new BookletStorage(base, properties)
 }

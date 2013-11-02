@@ -25,7 +25,9 @@ package org.digimead.booklet
 import java.io.File
 import java.util.Properties
 
-import org.digimead.booklet.storage.FileStorage
+import org.digimead.booklet.template.BookletStorage
+import org.digimead.booklet.template.Preview
+import org.digimead.booklet.template.Produce
 import org.slf4j.LoggerFactory
 
 class Application extends xsbti.AppMain {
@@ -74,12 +76,14 @@ object Application {
       println("\nPreviewing `%s`. Press CTRL+C to stop.".format(input.getName()))
       if (Settings.verbose(properties))
         log.info("Process " + input.getCanonicalPath())
+
     }; 0
   }
 
   protected def help() = {
     println("""Usage: booklet [options] [@userPropertiesFile] [SRC] [DEST]
-              |-o generate offline manifest
+              |-i turn on index generation
+              |-o turn on offline manifest
               |-s save templates for customization
               |-v -v verbose
               |-? -h help
@@ -94,7 +98,7 @@ object Application {
     case file if file.exists && file.isFile() ⇒ Some(file)
     case _ ⇒ None
   }
-  protected def storage(dir: File, properties: Properties) = FileStorage(dir, properties)
+  protected def storage(dir: File, properties: Properties) = BookletStorage(dir, properties)
   protected def processProperties(args: Array[String], input: File): Either[Int, Properties] = {
     val properties: Properties = Booklet.mergeWithFiles(new Properties,
       args.flatMap(f ⇒ if (f.startsWith("@")) file(f.drop(1)) else None): _*)
@@ -117,6 +121,10 @@ object Application {
       implicit val implicitProperties = properties
       Settings.offline = true
     }
+    if (args.contains("-i")) {
+      implicit val implicitProperties = properties
+      Settings.index = true
+    }
     if (args.contains("-?") || args.contains("-h")) {
       help()
       return (Left(1))
@@ -125,9 +133,9 @@ object Application {
       val storage = this.storage(input, properties)
       implicit val implicitProperties = Booklet.merge(storage.baseBookletProperties, properties)
       val userTemplatePath = new File(storage.base, Settings.template)
-      storage.template.languages(implicitProperties).foreach { lang ⇒
+      Settings.languages(implicitProperties).foreach { lang ⇒
         val baseLang = new File(storage.base, lang)
-        val userTemplatePathLang = if (lang == storage.template.defaultLanguage) userTemplatePath else new File(baseLang, Settings.template)
+        val userTemplatePathLang = if (lang == Settings.defaultLanguage) userTemplatePath else new File(baseLang, Settings.template)
         storage.writeTemplates(userTemplatePathLang, lang)
       }
       log.info("Wrote templates to " + userTemplatePath)
