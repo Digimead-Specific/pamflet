@@ -1,20 +1,24 @@
+-import org.digimead.booklet.Resources
 -import org.digimead.booklet.content.Content
--import org.digimead.booklet.Language
--import org.digimead.booklet.Printer
 -import org.digimead.booklet.content.Globalized
 -import org.digimead.booklet.content.Page
--@ val contents: Content
+-import org.digimead.booklet.template.Printer
+-@ val content: Content
 -@ val globalized: Globalized
 -@ val page: Page
 -
   val lmap = for {
       lang ← page.template.languages(page.properties)
       p ← globalized(lang).pages.find { _.localPath == page.localPath }
-    } yield (lang, p, page.getProperty("lang-" + lang) getOrElse { Language.languageName(lang) getOrElse lang })
+    } yield (lang, p, page.getProperty("lang-" + lang) getOrElse { Resources.Language.languageName(lang) getOrElse lang })
 - if (page.template.languages(page.properties).size > 1 && lmap.size > 1)
   %ul.language-bar
     - for ((lang, page, name) <- lmap)
       %li
-        %a(href={ Printer.relative(lang, contents, globalized) + Printer.webify(page) })
+        - if (lang != content.language)
+          %a(href={ Printer.relative(lang, content, globalized) + Printer.webify(page) })
+            %span(class="lang-item lang-#{lang}")
+              =name
+        - else
           %span(class="lang-item lang-#{lang}")
             =name

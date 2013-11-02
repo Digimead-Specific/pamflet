@@ -6,12 +6,13 @@
 -@ val bigScreen: String
 -@ val body: String
 -@ val colorScheme: String
--@ val contents: Content
+-@ val content: Content
+-@ val offlineManifest: Option[String]
 -@ val page: Page
 -@ val relativeBase: String
 -@ val title: String = "Booklet untitled page"
 !!! 5
-%html
+%html(lang={ content.language } manifest={ offlineManifest getOrElse false })
   %head
     %title #{title}
     - render("element/Favicon.scaml")
@@ -30,7 +31,7 @@
     %script(type="text/javascript" src="#{relativeBase}js/jquery.collapse.js")
     %script(type="text/javascript" src="#{relativeBase}js/booklet.js")
     %script(type="text/javascript")
-      Booklet.page.language = '#{contents.language}'
+      Booklet.page.language = '#{content.language}'
     %meta(charset="utf-8")
     %meta(content="width=device-width, initial-scale=1" name="viewport")
     %meta(http-equiv="Content-Type" content="text/html")

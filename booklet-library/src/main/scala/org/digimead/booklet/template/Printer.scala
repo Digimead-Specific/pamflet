@@ -34,7 +34,7 @@ import org.digimead.booklet.content.ScrollPage
 import org.digimead.booklet.discounter.Headers
 import org.slf4j.LoggerFactory
 
-case class Printer(contents: Content, globalized: Globalized, manifest: Option[String]) {
+case class Printer(content: Content, globalized: Globalized) {
   protected val log = LoggerFactory.getLogger(getClass)
 
   def print(page: Page) = {
@@ -59,36 +59,37 @@ case class Printer(contents: Content, globalized: Globalized, manifest: Option[S
         case ((_ :: tail), _) ⇒ lastnext(tail, last)
         case _ ⇒ (None, None)
       }
-    val (prev, next) = lastnext(contents.pages, None)
-    val templateProperties = Map(
+    val (prev, next) = lastnext(content.pages, None)
+    val templateProperties = Map[String, Any]() ++ mapAsScalaMap(page.properties.asInstanceOf[java.util.Map[String, String]]) ++ Map(
       "arrow" -> (page.getProperty("booklet.arrow") getOrElse "❧"),
       "bigScreen" -> "screen and (min-device-width: 800px), projection",
       "colorScheme" -> (page.getProperty("color_scheme") map { "color_scheme-" + _ } getOrElse "color_scheme-redmond"),
-      "contents" -> contents,
+      "content" -> content,
       "globalized" -> globalized,
+      "offlineManifest" -> (if (Settings.offline) Some(Settings.manifest) else None),
       "next" -> next,
       "page" -> page,
       "prev" -> prev,
-      "relativeBase" -> Printer.relative(globalized.defaultLanguage, contents, globalized),
-      "title" -> "%s — %s".format(contents.title, page.name)) ++
-      mapAsScalaMap(page.properties.asInstanceOf[java.util.Map[String, String]])
-    if (Settings.optionVerbose) {
+      "relativeBase" -> Printer.relative(globalized.language, content, globalized),
+      "title" -> "%s — %s".format(content.title, page.name))
+
+    if (Settings.verbose) {
       log.info(s"Booklet properties (${templateProperties.size}) for '${page.name}' page:")
       for ((k, v) ← templateProperties.toSeq.sortBy(_._1))
         log.info(k + " -> " + v)
     }
     Template.engine.layout(templateFile.getCanonicalPath(), templateProperties)
   }
-  def named(name: String) = contents.pages.find(page ⇒ Printer.webify(page) == name)
+  def named(name: String) = content.pages.find(page ⇒ Printer.webify(page) == name)
   def printNamed(name: String) = named(name).map(print)
 }
 
 object Printer {
   def relative(lang: String, contents: Content, globalized: Globalized): String =
     if (contents.isDefaultLang) {
-      if (lang == globalized.defaultLanguage) "" else lang + "/"
+      if (lang == globalized.language) "" else lang + "/"
     } else {
-      if (lang == globalized.defaultLanguage) "../" else "../" + lang + "/"
+      if (lang == globalized.language) "../" else "../" + lang + "/"
     }
   def webify(page: Page) =
     Headers.BlockNames.encode(page.getProperty("out") getOrElse {
@@ -100,4 +101,3 @@ object Printer {
       page.name + ".html"
     }).replace(' ', '+')
 }
-

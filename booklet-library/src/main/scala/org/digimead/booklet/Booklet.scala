@@ -32,6 +32,8 @@ import java.util.Properties
 
 import scala.collection.JavaConverters._
 
+import org.digimead.booklet.content.Content
+import org.digimead.booklet.template.Printer
 import org.slf4j.LoggerFactory
 
 /**
@@ -40,12 +42,28 @@ import org.slf4j.LoggerFactory
 object Booklet {
   val log = LoggerFactory.getLogger(getClass)
 
-  /** Dump properties */
+  /** Dump properties. */
   def dump(properties: Properties, header: String = "Booklet properties (%d):") = synchronized {
     val keys = properties.propertyNames.asInstanceOf[Enumeration[String]].asScala.toSeq
     log.info(header.format(keys.size))
     for (key ← keys.sorted)
       log.info(key + " -> " + properties.getProperty(key))
+  }
+  /** Get booklet manifest. */
+  def manifest(contents: Content): String = {
+    val css = contents.css.map { case (nm, v) ⇒ ("css/" + nm, v) }.toList
+    val favicon = contents.favicon.toList.map { case u ⇒ ("favicon.ico", u) }
+    val files = contents.files.toList.map { case (nm, u) ⇒ ("files/" + nm, u) }
+    val paths = Resources.paths(contents.prettifyLangs)(contents.rootSection.properties)
+
+    ("CACHE MANIFEST" ::
+      // cache file must change between updates
+      ("# " + new java.util.Date) ::
+      css.map { case (n, _) ⇒ n } :::
+      contents.pages.map { p ⇒ Printer.webify(p) } :::
+      files.map { case (n, _) ⇒ n } :::
+      favicon.map { case (n, _) ⇒ n } :::
+      paths).mkString("\n")
   }
   /** Return consolidated properties. */
   def mergeWithStrings(base: Properties, append: String*): Properties = {

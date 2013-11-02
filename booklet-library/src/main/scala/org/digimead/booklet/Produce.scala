@@ -30,45 +30,29 @@ import org.digimead.booklet.storage.Storage
 import org.digimead.booklet.template.Printer
 
 object Produce {
-  def apply(globalized: Globalized, target: File) {
-    globalized.languages foreach { lang ⇒
-      if (lang == globalized.defaultLanguage) apply(globalized.defaultContents, globalized, target)
-      else apply(globalized(lang), globalized, new File(target, lang))
-    }
+  def apply(globalized: Globalized, target: File): Unit = globalized.languages foreach { lang ⇒
+    if (lang == globalized.language)
+      apply(globalized.content, globalized, target)
+    else
+      apply(globalized(lang), globalized, new File(target, lang))
   }
-  def apply(contents: Content, globalized: Globalized, target: File) {
-    val manifest = "booklet.manifest"
-    val offlineTarget = new File(target + "/offline/")
-    val css = contents.css.map { case (nm, v) ⇒ ("css/" + nm, v) }.toList
-    val paths = Resources.paths(contents.prettifyLangs)(globalized.baseProperties)
-    val files = contents.files.toList.map { case (nm, u) ⇒ ("files/" + nm, u) }
-    val favicon = contents.favicon.toList.map { case u ⇒ ("favicon.ico", u) }
+  def apply(content: Content, globalized: Globalized, target: File) {
+    implicit val implicitProperties = globalized.properties
+    val css = content.css.map { case (nm, v) ⇒ ("css/" + nm, v) }.toList
+    val paths = Resources.paths(content.prettifyLangs)
+    val files = content.files.toList.map { case (nm, u) ⇒ ("files/" + nm, u) }
+    val favicon = content.favicon.toList.map { case u ⇒ ("favicon.ico", u) }
 
-    // generate the pages in target directory and in
-    // subdirectory "offline" with html5 manifest
-    List(Some(manifest), None).foreach { manifestOpt ⇒
-      val offline = !manifestOpt.isEmpty
-      val targetDir = (if (offline) offlineTarget else target)
-      val printer = Printer(contents, globalized, manifestOpt)
-      contents.pages.foreach { page ⇒
-        val pagePath = Printer.fileify(page)
-        Storage.writeString(pagePath, printer.print(page), targetDir)
-      }
-      css.foreach { case (path, contents) ⇒ Storage.writeString(path, contents, targetDir) }
-      paths.foreach(path ⇒ Storage.write(path, targetDir, new java.net.URL(Resources(), path).openStream()))
-      for ((path, uri) ← files ++ favicon)
-        Storage.write(path, targetDir, uri.toURL.openStream)
+    val printer = Printer(content, globalized)
+    content.pages.foreach { page ⇒
+      val pagePath = Printer.fileify(page)
+      Storage.writeString(pagePath, printer.print(page), target)
     }
-
-    Storage.writeString(manifest, (
-      "CACHE MANIFEST" ::
-      // cache file must change between updates
-      ("# " + new java.util.Date) ::
-      css.map { case (n, _) ⇒ n } :::
-      contents.pages.map { p ⇒ Printer.webify(p) } :::
-      files.map { case (n, _) ⇒ n } :::
-      favicon.map { case (n, _) ⇒ n } :::
-      paths).mkString("\n"),
-      offlineTarget)
+    css.foreach { case (path, contents) ⇒ Storage.writeString(path, contents, target) }
+    paths.foreach(path ⇒ Storage.write(path, target, new java.net.URL(Resources(), path).openStream()))
+    for ((path, uri) ← files ++ favicon)
+      Storage.write(path, target, uri.toURL.openStream)
+    if (Settings.offline)
+      Storage.writeString(Settings.manifest, Booklet.manifest(content), target)
   }
 }

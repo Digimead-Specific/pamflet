@@ -72,15 +72,16 @@ object Application {
       unfiltered.util.Browser.open(
         "http://127.0.0.1:%d/".format(server.port))
       println("\nPreviewing `%s`. Press CTRL+C to stop.".format(input.getName()))
-      if (Settings.optionVerbose(properties))
+      if (Settings.verbose(properties))
         log.info("Process " + input.getCanonicalPath())
     }; 0
   }
 
   protected def help() = {
     println("""Usage: booklet [options] [@userPropertiesFile] [SRC] [DEST]
-              |-v -v verbose
+              |-o generate offline manifest
               |-s save templates for customization
+              |-v -v verbose
               |-? -h help
               |
               |Default SRC is ./docs""".stripMargin); 1
@@ -99,7 +100,7 @@ object Application {
       args.flatMap(f ⇒ if (f.startsWith("@")) file(f.drop(1)) else None): _*)
     if (args.contains("-v")) {
       implicit val implicitProperties = properties
-      Settings.optionVerbose = true
+      Settings.verbose = true
       if (args.filter(_ == "-v").size > 1) {
         try {
           val simpleLoggerClass = Class.forName("org.slf4j.impl.SimpleLogger")
@@ -111,6 +112,10 @@ object Application {
           case e: ClassNotFoundException ⇒
         }
       }
+    }
+    if (args.contains("-o")) {
+      implicit val implicitProperties = properties
+      Settings.offline = true
     }
     if (args.contains("-?") || args.contains("-h")) {
       help()

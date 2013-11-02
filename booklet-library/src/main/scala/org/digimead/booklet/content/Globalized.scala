@@ -26,9 +26,15 @@ import java.util.Properties
 
 import org.digimead.booklet.template.Template
 
-case class Globalized(val contents: Map[String, Content], val template: Template)(implicit val baseProperties: Properties) {
+case class Globalized(val contents: Map[String, Content], val template: Template) {
   def apply(lang: String): Content = contents(lang)
-  def defaultContents: Content = apply(defaultLanguage)
-  def defaultLanguage: String = template.defaultLanguage
-  def languages: Seq[String] = template.languages
+  /** Default content. */
+  def content: Content = contents.find { case (lang, content) ⇒ lang == template.defaultLanguage(content.properties) }.
+    map(_._2).getOrElse { throw new IllegalStateException("Unable to find default content.") }
+  /** Default language. */
+  def language: String = content.language
+  /** All booklet languages. */
+  def languages: Seq[String] = template.languages(content.properties)
+  /** Default properties. */
+  def properties: Properties = content.properties
 }

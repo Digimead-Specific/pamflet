@@ -34,8 +34,10 @@ object Settings {
   val indexTemplateKey = "indexTemplate"
   /** Full path to indexTemplate. */
   val indexTemplateLocationKey = "indexTemplateLocation"
-  /** Flag indicating whether the library should be verbose. */
-  val optionVerboseKey = "optionVerbose"
+  /** A name of the file with site manifest for offline usage. */
+  val manifestKey = "manifest"
+  /** Flag indicating whether the generated content should support offline mode. */
+  val offlineKey = "offline"
   /** A name of the template directory. */
   val templateDirectoryKey = "templateDirectory"
   /** A name of the PageContent template. */
@@ -52,13 +54,8 @@ object Settings {
   val templatePageScrollLocationKey = "templatePageScrollLocation"
   /** A name of the file with template properties. */
   val templatePropertiesKey = "templateProperties"
-
-  /** Get verbose flag. */
-  def optionVerbose(implicit properties: Properties): Boolean =
-    properties.getProperty(optionVerboseKey, "N").toUpperCase() == "Y"
-  /** Set verbose flag. */
-  def optionVerbose_=(arg: Boolean)(implicit properties: Properties): Unit =
-    properties.setProperty(optionVerboseKey, if (arg) "Y" else "N")
+  /** Flag indicating whether the library should be verbose. */
+  val verboseKey = "verbose"
 
   /** Get the name of the file with index content. */
   def indexMarkdown(implicit properties: Properties): String =
@@ -99,6 +96,20 @@ object Settings {
   /** Set the location of the index template. */
   def indexTemplateLocation_=(arg: File)(implicit properties: Properties): Unit =
     properties.setProperty(indexTemplateLocationKey, arg.getCanonicalPath())
+
+  /** Get the name of the file with site manifest for offline usage. */
+  def manifest(implicit properties: Properties): String =
+    properties.getProperty(manifestKey, "booklet.manifest")
+  /** Set the name of the file with site manifest for offline usage. */
+  def manifest_=(arg: String)(implicit properties: Properties): Unit =
+    properties.setProperty(offlineKey, arg)
+
+  /** Get offline flag. */
+  def offline(implicit properties: Properties): Boolean =
+    properties.getProperty(offlineKey, "N").toUpperCase() == "Y"
+  /** Set offline flag. */
+  def offline_=(arg: Boolean)(implicit properties: Properties): Unit =
+    properties.setProperty(offlineKey, if (arg) "Y" else "N")
 
   /** Get the name of directory with booklet template. */
   def template(implicit properties: Properties): String =
@@ -173,4 +184,12 @@ object Settings {
   /** Set the name of file with booklet properties. */
   def templateProperties_=(arg: String)(implicit properties: Properties): Unit =
     properties.setProperty(templatePropertiesKey, arg)
+
+  /** Get verbose flag. */
+  def verbose(implicit properties: Properties): Boolean =
+    properties.getProperty(verboseKey, "N").toUpperCase() == "Y"
+  /** Set verbose flag. */
+  def verbose_=(arg: Boolean)(implicit properties: Properties): Unit =
+    properties.setProperty(verboseKey, if (arg) "Y" else "N")
+
 }

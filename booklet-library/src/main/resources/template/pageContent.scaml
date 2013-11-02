@@ -1,10 +1,10 @@
--import org.digimead.booklet.Printer
 -import org.digimead.booklet.content.AuthoredPage
 -import org.digimead.booklet.content.Content
 -import org.digimead.booklet.content.Page
 -import org.digimead.booklet.discounter.Discounter
+-import org.digimead.booklet.template.Printer
 -@ val arrow: String
--@ val contents: Content
+-@ val content: Content
 -@ val next: Option[Page]
 -@ val page: AuthoredPage
 - layout("default.scaml")
@@ -12,10 +12,10 @@
     .span-16.top.nav
       .span-16.title
         %span<
-          =contents.title
-          -if (contents.title != page.name)
+          =content.title
+          -if (content.title != page.name)
             \- #{page.name}
-  .span-16.prepend-1.append-1.contents
+  .span-16.prepend-1.append-1.content
     = Discounter.toXHTML(page.blocks)
   - next.map
     - case next: AuthoredPage =>

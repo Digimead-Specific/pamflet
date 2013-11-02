@@ -35,7 +35,7 @@ object Preview {
   def apply(globalized: ⇒ Globalized) = {
     def css(lang: String) = Map.empty ++ globalized(lang).css
     def files(lang: String) = Map.empty ++ globalized(lang).files
-    def defaultLanguage = globalized.defaultLanguage
+    def defaultLanguage = globalized.language
     def languages = globalized.languages
     def faviconResponse(lang: String) =
       globalized(lang).favicon map { responseStreamer } getOrElse NotFound
@@ -43,8 +43,14 @@ object Preview {
       CssContent ~> ResponseString(css(lang)(name))
     def fileResponse(lang: String, name: String) =
       responseStreamer(files(lang)(name))
-    def pageResponse(lang: String, name: String) =
-      Printer(globalized(lang), globalized, None).printNamed(name).map(Html5).getOrElse { NotFound }
+    def pageResponse(lang: String, name: String) = {
+      implicit val properties = globalized.properties
+      val result = if (name == Settings.manifest)
+        Some(Booklet.manifest(globalized(lang)))
+      else
+        Printer(globalized(lang), globalized).printNamed(name)
+      result.map(Html5).getOrElse { NotFound }
+    }
 
     unfiltered.jetty.Http.anylocal.filter(unfiltered.filter.Planify {
       case GET(Path(Seg(lang :: Nil))) if languages.contains(lang) ⇒

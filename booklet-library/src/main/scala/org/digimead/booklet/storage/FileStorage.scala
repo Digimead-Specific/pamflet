@@ -52,10 +52,12 @@ class FileStorage(val base: File, val properties: Properties = new Properties) e
    * If there is no template then storage consider as plain markdown index.
    */
   def baseBookletProperties: Properties = {
+    // use user properties for baseBookletPropertiesFile
     implicit val properties = Booklet.merge(new Properties, this.properties)
     val result = if (baseBookletPropertiesFile.exists() &&
       baseBookletPropertiesFile.isFile() && baseBookletPropertiesFile.canRead())
-      Booklet.mergeWithFiles(properties, baseBookletPropertiesFile)
+      // ! this.properties must be merged at last
+      Booklet.mergeWithFiles(new Properties, baseBookletPropertiesFile)
     else
       properties
     updateProperties(result, template.defaultLanguage)
@@ -63,7 +65,7 @@ class FileStorage(val base: File, val properties: Properties = new Properties) e
   }
   def baseBookletPropertiesFile(implicit properties: Properties) = new File(base, Settings.templateProperties)
   def globalized = {
-    implicit val baseProperties = baseBookletProperties
+    implicit val baseProperties = Booklet.merge(baseBookletProperties, properties)
     if (log.isDebugEnabled())
       Booklet.dump(baseProperties, "Base properties(%d):")
 

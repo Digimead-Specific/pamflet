@@ -1,10 +1,10 @@
--import org.digimead.booklet.Printer._
 -import org.digimead.booklet.content.Page
+-import org.digimead.booklet.template.Printer
 -@ val arrow: String
 -@ val prev: Option[Page]
 -@ val page: Page
 - for(p <- prev)
-  %a(class="page prev nav" href={ webify(p) })
+  %a(class="page prev nav" href={ Printer.webify(p) })
     %span(class="space")
       &nbsp;
     %span
