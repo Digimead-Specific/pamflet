@@ -43,7 +43,6 @@ object Produce {
     val paths = Resources.paths(content.prettifyLangs)
     val files = content.files.toList.map { case (nm, u) ⇒ ("files/" + nm, u) }
     val favicon = content.favicon.toList.map { case u ⇒ ("favicon.ico", u) }
-
     val printer = Printer(content, globalized)
     content.pages.foreach { page ⇒
       val pagePath = Printer.fileify(page)

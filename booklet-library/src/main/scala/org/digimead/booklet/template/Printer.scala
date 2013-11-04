@@ -93,10 +93,7 @@ object Printer {
    * Get HTML file name.
    * File names shouldn't be url encoded, just space converted.
    */
-  def fileify(page: Page) =
-    (page.getProperty("out") getOrElse {
-      page.name + ".html"
-    }).replace(' ', '+')
+  def fileify(page: Page) = (page.getProperty("out") getOrElse { page.name + ".html" }).replace(' ', '+')
   /** Replace template values in input stream with bound properties. */
   def process(input: CharSequence)(implicit properties: Properties) = {
     val st = new StringTemplate
@@ -110,8 +107,5 @@ object Printer {
     } else {
       if (lang == globalized.language) "../" else "../" + lang + "/"
     }
-  def webify(page: Page) =
-    Headers.BlockNames.encode(page.getProperty("out") getOrElse {
-      page.name + ".html"
-    })
+  def webify(page: Page) = Headers.BlockNames.encode(page.getProperty("out") getOrElse { page.name + ".html" })
 }

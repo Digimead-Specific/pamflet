@@ -3,11 +3,12 @@
 [app]
   org: org.digimead
   name: booklet-app
-  version: 0.5.0.3-SNAPSHOT
+  version: 0.1.0.1-SNAPSHOT
   class: org.digimead.booklet.Application
   cross-versioned: binary
 [repositories]
   local
   maven-central
+  digimead-maven: http://storage.googleapis.com/maven.repository.digimead.org/
 [boot]
   directory: ${user.home}/.sbt/booklet-boot

@@ -45,7 +45,7 @@ case class Content(
     rootSection.children :::
       DeepContents() ::
       ScrollPage(rootSection) ::
-      Nil)
+      Nil)(rootSection.properties)
   val pages = traverse(booklet.children, booklet :: Nil)
   val title = booklet.name
   val prettifyLangs = (Set.empty[String] /: pages) { _ ++ _.prettifyLangs }

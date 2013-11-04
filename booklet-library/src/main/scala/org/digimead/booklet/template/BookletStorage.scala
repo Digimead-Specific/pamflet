@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory
 
 import com.tristanhunt.knockoff.Block
 
-class BookletStorage(val base: File, val properties: Properties = new Properties) extends Storage {
+class BookletStorage(val input: File, val properties: Properties = new Properties) extends Storage {
   protected val log = LoggerFactory.getLogger(getClass)
 
   if (log.isDebugEnabled())
@@ -60,7 +60,7 @@ class BookletStorage(val base: File, val properties: Properties = new Properties
     updateProperties(result, Settings.defaultLanguage)
     result
   }
-  def baseBookletPropertiesFile(implicit properties: Properties) = new File(base, Settings.templateProperties)
+  def baseBookletPropertiesFile(implicit properties: Properties) = new File(input, Settings.templateProperties)
   def globalized = {
     implicit val baseProperties = Booklet.merge(baseBookletProperties, properties)
     if (log.isDebugEnabled())
@@ -70,7 +70,7 @@ class BookletStorage(val base: File, val properties: Properties = new Properties
       log.debug("Process storage as booklets.")
       Settings.languages map { lang ⇒
         val isDefaultLang = lang == Settings.defaultLanguage
-        val dir = if (isDefaultLang) base else new File(base, lang)
+        val dir = if (isDefaultLang) input else new File(input, lang)
         if (!dir.isDirectory())
           throw new IOException("Unable to read " + dir.getCanonicalPath())
         val css = dir.listFiles.filter { _.getName.endsWith(".css") }.map { f ⇒ (f.getName, read(f)) }
@@ -80,14 +80,18 @@ class BookletStorage(val base: File, val properties: Properties = new Properties
           case file if file.exists() && file.isFile() && file.canRead() ⇒ Booklet.merge(Booklet.mergeWithFiles(baseBookletProperties, file), this.properties)
           case _ ⇒ Booklet.merge(new Properties, baseProperties)
         }
+        // updateProperties with base settings
         updateProperties(properties, Settings.defaultLanguage)
+        if (!isDefaultLang)
+          // updateProperties with language specific settings
+          updateProperties(properties, lang)
         lang -> Content(lang, isDefaultLang, rootSection(dir, lang)(properties), css, files, favicon)
       }
     } else {
       log.debug("Process storage as index of raw markdowns.")
       Settings.languages map { lang ⇒
         val isDefaultLang = lang == Settings.defaultLanguage
-        val dir = if (isDefaultLang) base else new File(base, lang)
+        val dir = if (isDefaultLang) input else new File(input, lang)
         val css = dir.listFiles.filter { _.getName.endsWith(".css") }.map { f ⇒ (f.getName, read(f)) }
         val files = dir.listFiles.filter(_.getName == "files").flatMap(_.listFiles.map { f ⇒ (f.getName, f.toURI) })
         val favicon = dir.listFiles.filter(_.getName == "favicon.ico").headOption.map { _.toURI }
@@ -95,7 +99,11 @@ class BookletStorage(val base: File, val properties: Properties = new Properties
           case file if file.exists() && file.isFile() && file.canRead() ⇒ Booklet.merge(Booklet.mergeWithFiles(baseBookletProperties, file), this.properties)
           case _ ⇒ Booklet.merge(new Properties, baseProperties)
         }
+        // updateProperties with base settings
         updateProperties(properties, Settings.defaultLanguage)
+        if (!isDefaultLang)
+          // updateProperties with language specific settings
+          updateProperties(properties, lang)
         lang -> Content(lang, isDefaultLang, indexSection(dir, lang)(properties), css, files, favicon)
       }
     }
@@ -116,9 +124,10 @@ class BookletStorage(val base: File, val properties: Properties = new Properties
       emptySection
   }
   def read(file: File) = scala.io.Source.fromFile(file).mkString("")
-  def knock(file: File)(implicit properties: Properties): Seq[Block] = {
+  def knock(file: File)(implicit properties: Properties): (Seq[Block], Properties) = {
     val frontin = Frontin(read(file))
-    try Discounter.knockoff(Printer.process(frontin body)(Booklet.mergeWithStrings(properties, frontin.header.toSeq: _*)))
+    val markdownProperties = Booklet.mergeWithStrings(properties, frontin.header.toSeq: _*)
+    try ((Discounter.knockoff(Printer.process(frontin body)(markdownProperties)), markdownProperties))
     catch {
       case e: Throwable ⇒
         Console.err.println("Error while processing " + file.toString)
@@ -133,73 +142,73 @@ class BookletStorage(val base: File, val properties: Properties = new Properties
       Resources.writeTo(Resources.paths(withTemplates = true), target, lang)
   }
 
-  protected def bookletSection(localPath: String, dir: File, lang: String)(implicit properties: Properties): Seq[Section] = {
+  protected def bookletSection(localPath: String, dir: File, lang: String)(implicit properties: Properties): Option[Section] = {
     val files = getFiles(dir, lang)
     files.find(isMarkdown).map { head ⇒
-      val blocks = knock(head)
-      val childFiles = files.filterNot { _ == head } filterNot { f ⇒
-        f.isDirectory && Settings.languages.contains(f.getName)
-      }
+      val (blocks, markdownProperties) = knock(head)
+      val childFiles = files.filterNot { _ == head } filterNot { f ⇒ f.isDirectory && Settings.languages.contains(f.getName) }
       val children = childFiles.flatMap { f ⇒
         if (isMarkdown(f))
-          try Some(Seq(Leaf(localPath + "/" + f.getName, knock(f))))
-          catch {
+          try {
+            val (blocks, markdownProperties) = knock(f)
+            Seq(Leaf(localPath + "/" + f.getName, blocks)(markdownProperties))
+          } catch {
             case e: Throwable ⇒
               log.error(s"Markdown file '${f.getName}' is broken: " + e.getMessage(), e)
-              None
+              Seq.empty
           }
         else {
           Settings.excludeFolder match {
             case Some(filter) ⇒
               if (!filter.r.pattern.matcher(f.getName).matches)
-                Some(indexSection(localPath + "/" + f.getName, f, lang))
+                bookletSection(localPath + "/" + f.getName, f, lang).toSeq
               else {
                 log.debug(s"Skip folder '${f.getName}' because of filter /$filter/")
-                None
+                Seq.empty
               }
             case None ⇒
-              Some(indexSection(localPath + "/" + f.getName, f, lang))
+              bookletSection(localPath + "/" + f.getName, f, lang).toSeq
           }
         }
       }
-      Section(localPath, blocks, children.flatten)
-    }.toSeq
+      Section(localPath, blocks, children)(markdownProperties)
+    }
   }
-  protected def indexSection(localPath: String, dir: File, lang: String)(implicit properties: Properties): Seq[Section] = {
-    val blocks = knock(Settings.indexMarkdownLocation getOrElse
+  protected def indexSection(localPath: String, dir: File, lang: String)(implicit properties: Properties): Option[Section] = {
+    val (blocks, markdownProperties) = knock(Settings.indexMarkdownLocation getOrElse
       { throw new IllegalStateException("Unable to find 'indexMarkdownLocation' property.") })
     val files = getFiles(dir, lang)
     files.find(isMarkdown).map { head ⇒
-      val childFiles = files.filterNot { f ⇒
-        f.isDirectory && Settings.languages.contains(f.getName)
-      }
+      val childFiles = files.filterNot { f ⇒ f.isDirectory && Settings.languages.contains(f.getName) }
       val children = childFiles.flatMap { f ⇒
         if (isMarkdown(f))
-          try Some(Seq(Leaf(localPath + "/" + f.getName, knock(f))))
-          catch {
+          try {
+            val (blocks, markdownProperties) = knock(f)
+            Seq(Leaf(localPath + "/" + f.getName, blocks)(markdownProperties))
+          } catch {
             case e: Throwable ⇒
               log.error(s"Markdown file '${f.getName}' is broken: " + e.getMessage(), e)
-              None
+              Seq.empty
           }
         else {
           Settings.excludeFolder match {
             case Some(filter) ⇒
               if (!filter.r.pattern.matcher(f.getName).matches)
-                Some(indexSection(localPath + "/" + f.getName, f, lang))
+                indexSection(localPath + "/" + f.getName, f, lang).toSeq
               else {
                 log.debug(s"Skip folder '${f.getName}' because of filter /$filter/")
-                None
+                Seq.empty
               }
             case None ⇒
-              Some(indexSection(localPath + "/" + f.getName, f, lang))
+              indexSection(localPath + "/" + f.getName, f, lang).toSeq
           }
         }
       }
-      Section(localPath, blocks, children.flatten)
-    }.toSeq
+      Section(localPath, blocks, children)(markdownProperties)
+    }
   }
   protected def getFiles(dir: File, lang: String)(implicit properties: Properties): List[File] = {
-    val baseDirectoryForLang = new File(base, lang)
+    val baseDirectoryForLang = new File(input, lang)
     val templateDirectoryName = Settings.template
     Settings.excludeMarkdown match {
       case Some(filter) ⇒
@@ -207,7 +216,7 @@ class BookletStorage(val base: File, val properties: Properties = new Properties
         (Option(dir.listFiles) match {
           case Some(files) ⇒ files.toList.filterNot { f ⇒
             f.isDirectory() && f.getName() == templateDirectoryName &&
-              (f.getParentFile.getCanonicalFile() == base.getCanonicalFile() || f.getParentFile.getCanonicalFile() == baseDirectoryForLang) || {
+              (f.getParentFile.getCanonicalFile() == input.getCanonicalFile() || f.getParentFile.getCanonicalFile() == baseDirectoryForLang) || {
                 val skip = isMarkdown(f) && rFilter.findFirstMatchIn(f.getName()).nonEmpty
                 if (skip)
                   log.debug(s"Skip markdown '${f.getName}' because of filter /$filter/")
@@ -220,7 +229,7 @@ class BookletStorage(val base: File, val properties: Properties = new Properties
         (Option(dir.listFiles) match {
           case Some(files) ⇒ files.toList.filterNot { f ⇒
             f.isDirectory() && f.getName() == templateDirectoryName &&
-              (f.getParentFile.getCanonicalFile() == base.getCanonicalFile() || f.getParentFile.getCanonicalFile() == baseDirectoryForLang)
+              (f.getParentFile.getCanonicalFile() == input.getCanonicalFile() || f.getParentFile.getCanonicalFile() == baseDirectoryForLang)
           }
           case None ⇒ Nil
         }).sortWith(_.getName < _.getName)
@@ -233,12 +242,12 @@ class BookletStorage(val base: File, val properties: Properties = new Properties
   protected def updateProperties(properties: Properties, lang: String) {
     implicit val implicitProperties = properties
     val isDefaultLang = lang == Settings.defaultLanguage
-    val baseLang = if (isDefaultLang) base else new File(base, lang)
+    val baseLang = if (isDefaultLang) input else new File(input, lang)
     val app = Booklet.tmpDirectory
     val appLang = if (isDefaultLang) Booklet.tmpDirectory else new File(Booklet.tmpDirectory, lang)
     val appTemplatePath = new File(app, Settings.template)
     val appTemplatePathLang = new File(appLang, Settings.template)
-    val userTemplatePath = new File(base, Settings.template)
+    val userTemplatePath = new File(input, Settings.template)
     val userTemplatePathLang = new File(baseLang, Settings.template)
     val (templatePath, templatePathLang) = if (userTemplatePath.exists())
       (userTemplatePath, userTemplatePathLang)
@@ -254,7 +263,7 @@ class BookletStorage(val base: File, val properties: Properties = new Properties
     }
 
     // Path with the base directory.
-    properties.setProperty("basePath", base.getCanonicalPath())
+    properties.setProperty("basePath", input.getCanonicalPath())
 
     // Path to the index markdown file.
     Settings.indexMarkdownLocation = findResource(Settings.indexMarkdown, templatePath, templatePathLang) getOrElse {
@@ -290,5 +299,5 @@ class BookletStorage(val base: File, val properties: Properties = new Properties
 }
 
 object BookletStorage {
-  def apply(base: File, properties: Properties = new Properties) = new BookletStorage(base, properties)
+  def apply(input: File, properties: Properties = new Properties) = new BookletStorage(input, properties)
 }

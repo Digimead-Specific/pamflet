@@ -44,7 +44,7 @@ object Application {
       val Array(input, output) = args.takeRight(2).map(dir(_).get)
       processProperties(args.dropRight(2), input) match {
         case Right(properties) ⇒
-          Produce(storage(input, properties).globalized, output)
+          Produce(BookletStorage(input, properties).globalized, output)
           log.info("Wrote booklet to " + output); 0
         case Left(returnCode) if returnCode >= 0 ⇒ returnCode
         case Left(returnCode) ⇒ help()
@@ -70,7 +70,7 @@ object Application {
       }
   }
   def preview(input: File, properties: Properties) = {
-    Preview(storage(input, properties).globalized).run { server ⇒
+    Preview(BookletStorage(input, properties).globalized).run { server ⇒
       unfiltered.util.Browser.open(
         "http://127.0.0.1:%d/".format(server.port))
       println("\nPreviewing `%s`. Press CTRL+C to stop.".format(input.getName()))
@@ -98,7 +98,6 @@ object Application {
     case file if file.exists && file.isFile() ⇒ Some(file)
     case _ ⇒ None
   }
-  protected def storage(dir: File, properties: Properties) = BookletStorage(dir, properties)
   protected def processProperties(args: Array[String], input: File): Either[Int, Properties] = {
     val properties: Properties = Booklet.mergeWithFiles(new Properties,
       args.flatMap(f ⇒ if (f.startsWith("@")) file(f.drop(1)) else None): _*)
@@ -130,11 +129,11 @@ object Application {
       return (Left(1))
     }
     if (args.contains("-s")) {
-      val storage = this.storage(input, properties)
+      val storage = BookletStorage(input, properties)
       implicit val implicitProperties = Booklet.merge(storage.baseBookletProperties, properties)
-      val userTemplatePath = new File(storage.base, Settings.template)
+      val userTemplatePath = new File(storage.input, Settings.template)
       Settings.languages(implicitProperties).foreach { lang ⇒
-        val baseLang = new File(storage.base, lang)
+        val baseLang = new File(storage.input, lang)
         val userTemplatePathLang = if (lang == Settings.defaultLanguage) userTemplatePath else new File(baseLang, Settings.template)
         storage.writeTemplates(userTemplatePathLang, lang)
       }
