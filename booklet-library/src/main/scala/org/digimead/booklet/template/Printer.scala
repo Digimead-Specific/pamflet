@@ -102,7 +102,7 @@ object Printer {
     st.toString
   }
   def relative(lang: String, contents: Content, globalized: Globalized): String =
-    if (contents.isDefaultLang) {
+    if (contents.location.isDefault) {
       if (lang == globalized.language) "" else lang + "/"
     } else {
       if (lang == globalized.language) "../" else "../" + lang + "/"

@@ -24,12 +24,11 @@ package org.digimead.booklet.content
 
 import java.net.URI
 import java.util.Properties
+import org.digimead.booklet.template.BookletStorage
 
 case class Content(
-  val language: String,
-  val isDefaultLang: Boolean,
+  val location: BookletStorage.Location,
   val rootSection: Section,
-  val css: Seq[(String, String)],
   val files: Seq[(String, URI)],
   val favicon: Option[URI])(implicit val properties: Properties) {
   def traverse(incoming: List[Page], past: List[Page]): List[Page] =

@@ -23,9 +23,10 @@
 package org.digimead.booklet.template
 
 import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 
 import org.digimead.booklet.Booklet
-import org.digimead.booklet.Resources
 import org.digimead.booklet.Settings
 import org.digimead.booklet.content.Content
 import org.digimead.booklet.content.Globalized
@@ -39,8 +40,6 @@ object Produce {
   }
   def apply(content: Content, globalized: Globalized, target: File) {
     implicit val implicitProperties = globalized.properties
-    val css = content.css.map { case (nm, v) ⇒ ("css/" + nm, v) }.toList
-    val paths = Resources.paths(content.prettifyLangs)
     val files = content.files.toList.map { case (nm, u) ⇒ ("files/" + nm, u) }
     val favicon = content.favicon.toList.map { case u ⇒ ("favicon.ico", u) }
     val printer = Printer(content, globalized)
@@ -48,11 +47,35 @@ object Produce {
       val pagePath = Printer.fileify(page)
       Storage.writeString(pagePath, printer.print(page), target)
     }
-    css.foreach { case (path, contents) ⇒ Storage.writeString(path, contents, target) }
-    paths.foreach(path ⇒ Storage.write(path, target, new java.net.URL(Resources(), path).openStream()))
+    Option(content.location.resourcesPathLang.listFiles()).getOrElse(Array.empty).filter(f ⇒ f.isDirectory() &&
+      (f.getName() == "css" || f.getName() == "js" || f.getName() == "img")).foreach { source ⇒
+      val sourceParent = source.getParentFile()
+      recursiveListFiles(source).foreach { f ⇒
+        if (f.isFile()) {
+          var parent: File = f.getParentFile()
+          var parents = Seq.empty[File]
+          while (parent != null && parent != sourceParent) {
+            parents = parents :+ parent
+            parent = parent.getParentFile()
+          }
+          val destination = new File(target, (parents.map(_.getName()).reverse :+ f.getName).mkString(File.separator))
+          if (!destination.getParentFile.exists())
+            destination.getParentFile.mkdirs()
+          copy(f, destination)
+        }
+      }
+    }
     for ((path, uri) ← files ++ favicon)
       Storage.write(path, target, uri.toURL.openStream)
     if (Settings.offline)
       Storage.writeString(Settings.manifest, Booklet.manifest(content), target)
+  }
+  protected def copy(from: File, to: File) {
+    new FileOutputStream(to) getChannel () transferFrom (
+      new FileInputStream(from) getChannel, 0, Long.MaxValue)
+  }
+  protected def recursiveListFiles(f: File): Array[File] = {
+    val these = f.listFiles
+    these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
   }
 }

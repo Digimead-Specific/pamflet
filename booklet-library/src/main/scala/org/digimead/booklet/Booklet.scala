@@ -60,7 +60,6 @@ object Booklet {
   }
   /** Get booklet manifest for offline usage. */
   def manifest(contents: Content): String = {
-    val css = contents.css.map { case (nm, v) ⇒ ("css/" + nm, v) }.toList
     val favicon = contents.favicon.toList.map { case u ⇒ ("favicon.ico", u) }
     val files = contents.files.toList.map { case (nm, u) ⇒ ("files/" + nm, u) }
     val paths = Resources.paths(contents.prettifyLangs)(contents.rootSection.properties)
@@ -68,7 +67,6 @@ object Booklet {
     ("CACHE MANIFEST" ::
       // cache file must change between updates
       ("# " + new java.util.Date) ::
-      css.map { case (n, _) ⇒ n } :::
       contents.pages.map { p ⇒ Printer.webify(p) } :::
       files.map { case (n, _) ⇒ n } :::
       favicon.map { case (n, _) ⇒ n } :::

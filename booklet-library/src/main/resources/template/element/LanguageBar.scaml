@@ -16,7 +16,7 @@
   %ul.language-bar
     - for ((lang, page, name) <- lmap)
       %li
-        - if (lang != content.language)
+        - if (lang != content.location.lang)
           %a(href={ Printer.relative(lang, content, globalized) + Printer.webify(page) })
             %span(class="lang-item lang-#{lang}")
               =name

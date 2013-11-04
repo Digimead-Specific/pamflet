@@ -12,7 +12,7 @@
 -@ val relativeBase: String
 -@ val title: String = "Booklet untitled page"
 !!! 5
-%html(lang={ content.language } manifest={ offlineManifest getOrElse false })
+%html(lang={ content.location.lang } manifest={ offlineManifest getOrElse false })
   %head
     %title #{title}
     - render("element/Favicon.scaml")
@@ -31,14 +31,13 @@
     %script(type="text/javascript" src="#{relativeBase}js/jquery.collapse.js")
     %script(type="text/javascript" src="#{relativeBase}js/booklet.js")
     %script(type="text/javascript")
-      Booklet.page.language = '#{content.language}'
+      Booklet.page.language = '#{content.location.lang}'
     %meta(charset="utf-8")
     %meta(content="width=device-width, initial-scale=1" name="viewport")
     %meta(http-equiv="Content-Type" content="text/html")
     - render("element/Prettify.scaml")
     - render("element/GoogleAnalytics.scaml")
     - render("element/Twitter.scaml")
-    - render("element/CSS.scaml")
   %body(class=colorScheme)
     - render("element/PagePrevNav.scaml")
     - render("element/PageNextNav.scaml")

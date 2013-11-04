@@ -9,7 +9,7 @@
   - case Some(_) ⇒
     %link(rel="shortcut icon" href="favicon.ico")
   - case None ⇒
-    - if (!content.isDefaultLang)
+    - if (!content.location.isDefault)
       - globalized.content.favicon.map
         - _ ⇒
           %link(rel="shortcut icon" href="#{relativeBase}favicon.ico")

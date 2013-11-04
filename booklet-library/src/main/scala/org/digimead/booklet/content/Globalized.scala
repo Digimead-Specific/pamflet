@@ -32,7 +32,7 @@ case class Globalized(val contents: Map[String, Content]) {
   def content: Content = contents.find { case (lang, content) ⇒ lang == Settings.defaultLanguage(content.properties) }.
     map(_._2).getOrElse { throw new IllegalStateException("Unable to find default content.") }
   /** Default language. */
-  def language: String = content.language
+  def language: String = content.location.lang
   /** All booklet languages. */
   def languages: Seq[String] = Option(content.properties.get("languages")).map(_.toString()) match {
     case Some(xs) ⇒ xs.split(",").toSeq map { _.trim }
