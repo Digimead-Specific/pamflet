@@ -1,3 +1,9 @@
+---
+
+out: index.html
+
+---
+
 Pamflet
 =======
 

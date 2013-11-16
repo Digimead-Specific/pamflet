@@ -70,7 +70,7 @@ object Application {
       }
   }
   def preview(input: File, properties: Properties) = {
-    Preview(BookletStorage(input, properties).globalized).run { server ⇒
+    Preview(BookletStorage(input, properties)).run { server ⇒
       unfiltered.util.Browser.open(
         "http://127.0.0.1:%d/".format(server.port))
       println("\nPreviewing `%s`. Press CTRL+C to stop.".format(input.getName()))

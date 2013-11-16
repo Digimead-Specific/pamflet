@@ -4,8 +4,8 @@
 -@ val next: Option[Page]
 -@ val page: Page
 - for(n <- next)
-  %a(class="page next nav" href={ Printer.webify(n) })
-    %span(class="space")<
+  %a.page.next.nav(href={ Printer.webify(n) })
+    %span.space<
       &nbsp;
     %span<
       =arrow

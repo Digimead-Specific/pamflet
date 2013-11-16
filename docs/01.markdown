@@ -1,3 +1,7 @@
+---
+out: Like-a-Book1.html
+---
+
 Like a Book
 -----------
 

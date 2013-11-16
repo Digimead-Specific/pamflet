@@ -1,4 +1,4 @@
-var Pamflet = Pamflet || { page: {} };
+var Booklet = Booklet || { page: {} };
 $(function() {
     var load = function() {
         window.location = this.href;
