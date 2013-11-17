@@ -26,6 +26,6 @@ import java.util.Properties
 
 import com.tristanhunt.knockoff.Block
 
-case class Section(val localPath: String, val blocks: Seq[Block], val children: List[Page])(implicit val properties: Properties) extends ContentPage {
+case class Section(val fileName: Option[String], val localPath: String, val blocks: Seq[Block], val children: List[Page])(implicit val properties: Properties) extends ContentPage {
   override def toString() = s"Section('$name', path: ${localPath}, blocks: ${blocks.size}, children: ${children.size})"
 }

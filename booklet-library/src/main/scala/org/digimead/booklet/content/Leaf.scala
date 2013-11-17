@@ -24,12 +24,17 @@ package org.digimead.booklet.content
 
 import java.util.Properties
 
+import org.digimead.booklet.Settings
 import org.digimead.booklet.discounter.Headers
 
 import com.tristanhunt.knockoff.Block
 
-case class Leaf(val localPath: String, val blocks: Seq[Block])(implicit val properties: Properties) extends ContentPage {
-  override lazy val name = Headers.BlockNames.name(blocks) getOrElse s"Untitled (${localPath.split("""/""").last})"
+case class Leaf(val fileName: Option[String], val localPath: String, val blocks: Seq[Block])(implicit val properties: Properties) extends ContentPage {
+  override lazy val name = if (Settings.titleFromFileName(properties) && fileName.nonEmpty)
+    fileName.get.substring(0, fileName.get.lastIndexOf("."))
+  else
+    Settings.titlePattern format properties.getProperty("title",
+      Headers.BlockNames.name(blocks) getOrElse s"Untitled (${localPath.split("""/""").last})")
 
   override def toString() = s"Leaf('$name', path: ${localPath}, blocks: ${blocks.size})"
 }

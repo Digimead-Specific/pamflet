@@ -96,7 +96,10 @@ object Booklet {
     }
     result
   }
-  /** Return consolidated properties. */
+  /**
+   * Return consolidated properties.
+   * Last - wins.
+   */
   def merge(base: Properties, append: Properties*): Properties = {
     val result = new java.util.Properties
     for (p ← base +: append) result.putAll(p)

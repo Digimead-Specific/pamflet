@@ -27,14 +27,18 @@ import java.util.Properties
 import com.tristanhunt.knockoff.Block
 
 case class ScrollPage(val root: Section)(implicit val properties: Properties) extends AuthoredPage {
+  val fileName = None
   val name = "Combined Pages"
   val localPath = name
-  def flatten(pages: List[Page]): Seq[Block] =
+  def flatten(pages: List[Page]): Seq[(Page, Seq[Block])] =
     pages.view.flatMap {
-      case Leaf(_, blocks) ⇒ blocks
-      case Section(_, blocks, children) ⇒
-        blocks ++: flatten(children)
+      case page @ Leaf(_, _, blocks) ⇒ Seq((page, blocks))
+      case page @ Section(_, _, blocks, children) ⇒
+        Seq((page, blocks)) ++: flatten(children)
       case _ ⇒ Seq.empty
     }
-  def blocks = root.blocks ++: flatten(root.children)
+  /** Get combined blocks. */
+  def blocks: Seq[Block] = root.blocks ++: flatten(root.children).map(_._2).flatten
+  /** Get combined blocks per page. */
+  def blocksPerPage: Seq[(Page, Seq[Block])] = Seq((root, root.blocks)) ++: flatten(root.children)
 }

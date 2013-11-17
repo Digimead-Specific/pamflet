@@ -29,8 +29,10 @@ import org.digimead.booklet.discounter.Headers
 import org.digimead.booklet.template.Outline
 
 trait Page {
-  def localPath: String
-  def name: String
+  val fileName: Option[String]
+  val localPath: String
+  val name: String
+
   def prettifyLangs: Set[String]
   def properties: Properties
   def referencedLangs: Set[String]
@@ -54,13 +56,21 @@ object Page {
       }
   }
   /** Get table of contents list. */
-  def tocList(page: Page, pages: Seq[Page]): xml.NodeSeq =
-    <ol class="toc">{
-      pages.map {
-        case link: ContentPage ⇒ <li>{ tocLine(page, link) }</li>
-        case link ⇒ <li class="generated">{ tocLine(page, link) }</li>
-      }
-    } </ol>
+  def tocList(page: Page, pages: Seq[Page], ordered: Boolean = true): xml.NodeSeq =
+    if (ordered)
+      <ol class="toc"> {
+        pages.map {
+          case link: ContentPage ⇒ <li>{ tocLine(page, link) }</li>
+          case link ⇒ <li class="generated">{ tocLine(page, link) }</li>
+        }
+      } </ol>
+    else
+      <ul class="toc"> {
+        pages.map {
+          case link: ContentPage ⇒ <li>{ tocLine(page, link) }</li>
+          case link ⇒ <li class="generated">{ tocLine(page, link) }</li>
+        }
+      } </ul>
   /** Get href link for table of contents. */
   def tocHRef(page: Page, link: Page): String = page match {
     case ScrollPage(_) ⇒ Headers.BlockNames.fragment(link.name)
@@ -68,12 +78,12 @@ object Page {
   }
   /** Get line for table of contents. */
   def tocLine(page: Page, link: Page): xml.NodeSeq = link match {
-    case link @ Section(_, blocks, children) ⇒ tocLink(page, link) ++ tocList(page, children)
+    case link @ Section(_, _, blocks, children) ⇒ tocLink(page, link) ++ tocList(page, children)
     case link ⇒ tocLink(page, link)
   }
   def tocLink(page: Page, link: Page): xml.NodeSeq =
     if (link == page)
-      <div class="current">{ page.name }</div>
+      <div class="current">{ link.name }</div>
     else
       <div><a href={ tocHRef(page, link) }>{ link.name }</a></div> ++ {
         (link, page) match {

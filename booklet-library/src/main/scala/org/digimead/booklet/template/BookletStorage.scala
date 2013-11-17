@@ -29,6 +29,7 @@ import java.util.Properties
 import org.digimead.booklet.Booklet
 import org.digimead.booklet.Resources
 import org.digimead.booklet.Settings
+import org.digimead.booklet.Version
 import org.digimead.booklet.content.Content
 import org.digimead.booklet.content.Globalized
 import org.digimead.booklet.content.Leaf
@@ -54,19 +55,15 @@ class BookletStorage(val input: File, val properties: Properties = new Propertie
     val result = if (baseBookletPropertiesFile.exists() &&
       baseBookletPropertiesFile.isFile() && baseBookletPropertiesFile.canRead())
       // ! this.properties must be merged at last
-      Booklet.mergeWithFiles(new Properties, baseBookletPropertiesFile)
+      Booklet.merge(Booklet.mergeWithFiles(new Properties, baseBookletPropertiesFile), this.properties)
     else
       properties
-
     updateProperties(new BookletStorage.Location(input, Settings.defaultLanguage)(result), result)
     result
   }
   def baseBookletPropertiesFile(implicit properties: Properties) = new File(input, Settings.templateProperties)
   def globalized = {
     implicit val baseProperties = Booklet.merge(baseBookletProperties, properties)
-    if (log.isDebugEnabled())
-      Booklet.dump(baseProperties, "Base properties(%d):")
-
     val contents = Settings.languages(baseProperties) map { lang ⇒
       val location = new BookletStorage.Location(input, lang)(baseProperties)
       if (!location.baseLang.isDirectory())
@@ -89,16 +86,16 @@ class BookletStorage(val input: File, val properties: Properties = new Propertie
     Globalized(Map(contents: _*))
   }
   def indexSection(dir: File, lang: String)(implicit properties: Properties): Section = {
-    def emptySection = Section("", Seq.empty, Nil)
+    def emptySection = Section(None, "", Seq.empty, Nil)
     if (dir.exists)
-      indexSection("", dir, lang).headOption getOrElse emptySection
+      indexSection(None, "", dir, lang).headOption getOrElse emptySection
     else
       emptySection
   }
   def rootSection(dir: File, lang: String)(implicit properties: Properties): Section = {
-    def emptySection = Section("", Seq.empty, Nil)
+    def emptySection = Section(None, "", Seq.empty, Nil)
     if (dir.exists)
-      bookletSection("", dir, lang).headOption getOrElse emptySection
+      bookletSection(None, "", dir, lang).headOption getOrElse emptySection
     else
       emptySection
   }
@@ -121,7 +118,7 @@ class BookletStorage(val input: File, val properties: Properties = new Propertie
       Resources.writeTo(Resources.paths(withTemplates = true), target, lang)
   }
 
-  protected def bookletSection(localPath: String, dir: File, lang: String)(implicit properties: Properties): Option[Section] = {
+  protected def bookletSection(fileName: Option[String], localPath: String, dir: File, lang: String)(implicit properties: Properties): Option[Section] = {
     val files = getFiles(dir, lang)
     files.find(isMarkdown).map { head ⇒
       val (blocks, markdownProperties) = knock(head)
@@ -130,7 +127,7 @@ class BookletStorage(val input: File, val properties: Properties = new Propertie
         if (isMarkdown(f))
           try {
             val (blocks, markdownProperties) = knock(f)
-            Seq(Leaf(localPath + "/" + f.getName, blocks)(markdownProperties))
+            Seq(Leaf(Some(f.getName), localPath + "/" + f.getName, blocks)(markdownProperties))
           } catch {
             case e: Throwable ⇒
               log.error(s"Markdown file '${f.getName}' is broken: " + e.getMessage(), e)
@@ -140,20 +137,20 @@ class BookletStorage(val input: File, val properties: Properties = new Propertie
           Settings.excludeFolder match {
             case Some(filter) ⇒
               if (!filter.r.pattern.matcher(f.getName).matches)
-                bookletSection(localPath + "/" + f.getName, f, lang).toSeq
+                bookletSection(Some(f.getName), localPath + "/" + f.getName, f, lang).toSeq
               else {
                 log.debug(s"Skip folder '${f.getName}' because of filter /$filter/")
                 Seq.empty
               }
             case None ⇒
-              bookletSection(localPath + "/" + f.getName, f, lang).toSeq
+              bookletSection(Some(f.getName), localPath + "/" + f.getName, f, lang).toSeq
           }
         }
       }
-      Section(localPath, blocks, children)(markdownProperties)
+      Section(fileName, localPath, blocks, children)(markdownProperties)
     }
   }
-  protected def indexSection(localPath: String, dir: File, lang: String)(implicit properties: Properties): Option[Section] = {
+  protected def indexSection(fileName: Option[String], localPath: String, dir: File, lang: String)(implicit properties: Properties): Option[Section] = {
     val (blocks, markdownProperties) = knock(Settings.indexMarkdownLocation getOrElse
       { throw new IllegalStateException("Unable to find 'indexMarkdownLocation' property.") })
     val files = getFiles(dir, lang)
@@ -163,7 +160,7 @@ class BookletStorage(val input: File, val properties: Properties = new Propertie
         if (isMarkdown(f))
           try {
             val (blocks, markdownProperties) = knock(f)
-            Seq(Leaf(localPath + "/" + f.getName, blocks)(markdownProperties))
+            Seq(Leaf(Some(f.getName), localPath + "/" + f.getName, blocks)(markdownProperties))
           } catch {
             case e: Throwable ⇒
               log.error(s"Markdown file '${f.getName}' is broken: " + e.getMessage(), e)
@@ -173,26 +170,30 @@ class BookletStorage(val input: File, val properties: Properties = new Propertie
           Settings.excludeFolder match {
             case Some(filter) ⇒
               if (!filter.r.pattern.matcher(f.getName).matches)
-                indexSection(localPath + "/" + f.getName, f, lang).toSeq
+                indexSection(Some(f.getName), localPath + "/" + f.getName, f, lang).toSeq
               else {
                 log.debug(s"Skip folder '${f.getName}' because of filter /$filter/")
                 Seq.empty
               }
             case None ⇒
-              indexSection(localPath + "/" + f.getName, f, lang).toSeq
+              indexSection(Some(f.getName), localPath + "/" + f.getName, f, lang).toSeq
           }
         }
       }
-      Section(localPath, blocks, children)(markdownProperties)
+      Section(fileName, localPath, blocks, children)(markdownProperties)
     }
   }
+  /**
+   *  Get files from the directory.
+   *  @return (List[markdown files], List[other files])
+   */
   protected def getFiles(dir: File, lang: String)(implicit properties: Properties): List[File] = {
     val baseDirectoryForLang = new File(input, lang)
     val templateDirectoryName = Settings.template
-    Settings.excludeMarkdown match {
+    val files = Settings.excludeMarkdown match {
       case Some(filter) ⇒
         val rFilter = filter.r
-        (Option(dir.listFiles) match {
+        Option(dir.listFiles) match {
           case Some(files) ⇒ files.toList.filterNot { f ⇒
             f.isDirectory() && f.getName() == templateDirectoryName &&
               (f.getParentFile.getCanonicalFile() == input.getCanonicalFile() || f.getParentFile.getCanonicalFile() == baseDirectoryForLang) || {
@@ -203,16 +204,35 @@ class BookletStorage(val input: File, val properties: Properties = new Propertie
               }
           }
           case None ⇒ Nil
-        }).sortWith(_.getName < _.getName)
+        }
       case None ⇒
-        (Option(dir.listFiles) match {
+        Option(dir.listFiles) match {
           case Some(files) ⇒ files.toList.filterNot { f ⇒
             f.isDirectory() && f.getName() == templateDirectoryName &&
               (f.getParentFile.getCanonicalFile() == input.getCanonicalFile() || f.getParentFile.getCanonicalFile() == baseDirectoryForLang)
           }
           case None ⇒ Nil
-        }).sortWith(_.getName < _.getName)
+        }
     }
+    val sorted = if (Settings.fileNameAsVersion)
+      files.map { f ⇒
+        (f.getName() match {
+          case name if isMarkdown(f) ⇒
+            new Version(name.substring(0, name.lastIndexOf(".")))
+          case name ⇒
+            new Version(name)
+        }, f)
+      }.sortBy(!_._2.isDirectory).sortWith { case (a, b) ⇒ if (Settings.tocReverse) a._1 > b._1 else a._1 < b._1 }
+    else
+      files.map { f ⇒
+        (f.getName() match {
+          case name if isMarkdown(f) ⇒
+            name.substring(0, name.lastIndexOf("."))
+          case name ⇒
+            name
+        }, f)
+      }.sortBy(!_._2.isDirectory).sortWith { case (a, b) ⇒ if (Settings.tocReverse) a._1 > b._1 else a._1 < b._1 }
+    sorted.map(_._2)
   }
   protected def isMarkdown(f: File) = (
     !f.isDirectory &&
@@ -276,7 +296,7 @@ object BookletStorage {
     /** Temporary directory with resources. */
     val appResourcesPath = new File(app, Settings.template)
     /** User directory with resources. */
-    val userResourcesPath = new File(input, Settings.template)
+    val userResourcesPath = Settings.resources.map(new File(_, Settings.template)) getOrElse new File(input, Settings.template)
 
     /** Base directory for language. */
     val baseLang = if (isDefault) input else new File(input, lang)
@@ -285,11 +305,16 @@ object BookletStorage {
     /** Temporary directory with resources for language. */
     val appResourcesPathLang = new File(appLang, Settings.template)
     /** User directory with resources for language. */
-    val userResourcesPathLang = new File(baseLang, Settings.template)
+    val userResourcesPathLang = if (isDefault) userResourcesPath else
+      Settings.resources.map(r ⇒ new File(new File(r, lang), Settings.template)) getOrElse new File(baseLang, Settings.template)
 
     val (resourcesPath, resourcesPathLang) = if (userResourcesPath.exists())
       (userResourcesPath, userResourcesPathLang)
     else
       (appResourcesPath, appResourcesPathLang)
+
+    protected val log = LoggerFactory.getLogger(getClass)
+    log.debug("Set template container to " + resourcesPath)
+    log.debug(s"Set '$lang' template container to " + resourcesPathLang)
   }
 }

@@ -33,19 +33,19 @@ case class Content(
   val favicon: Option[URI])(implicit val properties: Properties) {
   def traverse(incoming: List[Page], past: List[Page]): List[Page] =
     incoming match {
-      case (head @ Section(_, _, _)) :: tail ⇒
+      case (head @ Section(_, _, _, _)) :: tail ⇒
         traverse(head.children ::: tail, head :: past)
       case head :: tail ⇒
         traverse(tail, head :: past)
       case Nil ⇒ past.reverse
     }
-  val booklet = Section(rootSection.localPath,
+  val booklet = Section(None, rootSection.localPath,
     rootSection.blocks,
     rootSection.children :::
       DeepContents() ::
       ScrollPage(rootSection) ::
       Nil)(rootSection.properties)
   val pages = traverse(booklet.children, booklet :: Nil)
-  val title = booklet.name
+  val title = properties.getProperty("title", booklet.name)
   val prettifyLangs = (Set.empty[String] /: pages) { _ ++ _.prettifyLangs }
 }

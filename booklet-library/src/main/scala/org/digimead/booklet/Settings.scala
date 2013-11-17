@@ -32,6 +32,8 @@ object Settings {
   val excludeFolderKey = "excludeFolder"
   /** An exclude regexp that applied to booklet markdowns. */
   val excludeMarkdownKey = "excludeMarkdown"
+  /** Flag indicating whether the file name will be casted to version type. */
+  val fileNameAsVersionKey = "fileNameAsVersion"
   /** A name of the file with an index content. */
   val indexMarkdownKey = "indexMarkdown"
   /** Full path to indexMarkdown. */
@@ -48,6 +50,8 @@ object Settings {
   val manifestKey = "manifest"
   /** Flag indicating whether the generated content should support offline mode. */
   val offlineKey = "offline"
+  /** Full path to user container with booklet template. */
+  val resourcesKey = "resources"
   /** A name of the template directory. */
   val templateDirectoryKey = "templateDirectory"
   /** A name of the PageContent template. */
@@ -64,6 +68,14 @@ object Settings {
   val templatePageScrollLocationKey = "templatePageScrollLocation"
   /** A name of the file with template properties. */
   val templatePropertiesKey = "templateProperties"
+  /** Page title. */
+  // title
+  /** Title pattern that applied to each page title (not to the content title). */
+  val titlePatternKey = "titlePattern"
+  /** Flag indicating whether page title should be generated from the file name. */
+  val titleFromFileNameKey = "titleFromFileName"
+  /** Flag with toc sort order. */
+  val tocReverseKey = "tocReverse"
   /** Flag indicating whether the library should be verbose. */
   val verboseKey = "verbose"
 
@@ -81,6 +93,10 @@ object Settings {
   /** Get the exclude markdown regexp. */
   def excludeMarkdown(implicit properties: Properties): Option[String] =
     Option(properties.getProperty(excludeMarkdownKey))
+
+  /** Get fileNameAsVersion flag. */
+  def fileNameAsVersion(implicit properties: Properties): Boolean =
+    properties.getProperty(fileNameAsVersionKey, "N").toUpperCase() == "Y"
 
   /** Get index flag. */
   def index(implicit properties: Properties): Boolean =
@@ -146,6 +162,16 @@ object Settings {
   def offline_=(arg: Boolean)(implicit properties: Properties): Unit =
     properties.setProperty(offlineKey, if (arg) "Y" else "N")
 
+  /** Get the user container with booklet template. */
+  def resources(implicit properties: Properties): Option[File] =
+    Option(properties.getProperty(resourcesKey)) flatMap { l ⇒
+      val location = new File(l)
+      if (location.isDirectory() && location.canRead())
+        Some(location)
+      else
+        None
+    }
+
   /** Get the name of directory with booklet template. */
   def template(implicit properties: Properties): String =
     properties.getProperty(templateDirectoryKey, "template")
@@ -204,6 +230,18 @@ object Settings {
   /** Get the name of file with booklet properties. */
   def templateProperties(implicit properties: Properties): String =
     properties.getProperty(templatePropertiesKey, "booklet.properties")
+
+  /** Get the title pattern for page. */
+  def titlePattern(implicit properties: Properties): String =
+    properties.getProperty(titlePatternKey, "%s")
+
+  /** Get the flag which indicating whether the page title should be generated from the file name. */
+  def titleFromFileName(implicit properties: Properties): Boolean =
+    properties.getProperty(titleFromFileNameKey, "N").toUpperCase() == "Y"
+
+  /** Get toc sort order flag. */
+  def tocReverse(implicit properties: Properties): Boolean =
+    properties.getProperty(tocReverseKey, "N").toUpperCase() == "Y"
 
   /** Get verbose flag. */
   def verbose(implicit properties: Properties): Boolean =

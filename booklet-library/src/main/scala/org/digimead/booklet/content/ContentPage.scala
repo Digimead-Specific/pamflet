@@ -23,7 +23,11 @@
 package org.digimead.booklet.content
 
 import org.digimead.booklet.discounter.Headers
+import org.digimead.booklet.Settings
 
 trait ContentPage extends AuthoredPage {
-  lazy val name = Headers.BlockNames.name(blocks) getOrElse "Untitled"
+  lazy val name = if (Settings.titleFromFileName(properties) && fileName.nonEmpty)
+    fileName.get.substring(0, fileName.get.lastIndexOf("."))
+  else
+    Settings.titlePattern(properties) format properties.getProperty("title", Headers.BlockNames.name(blocks) getOrElse "Untitled")
 }

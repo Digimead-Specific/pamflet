@@ -25,8 +25,10 @@ package org.digimead.booklet.content
 import java.util.Properties
 
 case class DeepContents()(implicit val properties: Properties) extends Page {
+  val fileName = None
   val name = "Contents in Depth"
   val localPath = name
+
   def prettifyLangs = Set.empty
   def referencedLangs = Set.empty
 }
