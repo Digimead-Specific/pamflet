@@ -1,14 +1,12 @@
 ---
-
 out: index.html
-
 ---
 
-Pamflet
+Booklet
 =======
 
-*Pamflet* is a publishing application for short texts, particularly
-user documentation of open-source software. It is designed to be easy
-to write and read on any platform.
+Booklet is a static site generator. Booklet is a fork of Pamflet.
 
-> [Version $version$ Release Notes]($notes$)
+> [Latest stable version $version$]($stable$)
+
+> [Latest development version $version$]($development$)

@@ -1,88 +1,56 @@
-lazy val common = ls.Plugin.lsSettings ++ Seq(
-  organization := "net.databinder",
-  version := "0.5.0-alpha1",
-  scalaVersion := "2.10.3",
-  crossScalaVersions := Seq("2.10.3"),
-  credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
-  homepage :=
-    Some(new java.net.URL("http://pamflet.databinder.net/")),
-  licenses := Seq("LGPL v3" -> url("http://www.gnu.org/licenses/lgpl.txt")),
-  publishMavenStyle := true,
-  publishTo :=
-    Some("releases" at
-         "https://oss.sonatype.org/service/local/staging/deploy/maven2"),
-  publishArtifact in Test := false,
-  pomExtra := (
-    <scm>
-      <url>git@github.com:n8han/pamflet.git</url>
-      <connection>scm:git:git@github.com:n8han/pamflet.git</connection>
-    </scm>
-    <developers>
-      <developer>
-        <id>n8han</id>
-        <name>Nathan Hamblen</name>
-        <url>http://github.com/n8han</url>
-      </developer>
-      <developer>
-        <id>eed3si9n</id>
-        <name>Eugene Yokota</name>
-        <url>https://github.com/eed3si9n</url>
-      </developer>
-    </developers>)
-)
+//
+// Copyright (c) 2013 Alexey Aksenov ezh@ezh.msk.ru
+//
+// Booklet is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Booklet is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Booklet. If not, see <http://www.gnu.org/licenses/>.
 
-val knockoffVersion = "0.8.1"
-lazy val knockoffDeps = Def.setting { Seq(
-  "com.tristanhunt" %% "knockoff" % knockoffVersion
-)}
+// DEVELOPMENT CONFIGURATION
+
 val unfilteredVersion = "0.7.0"
 val stringtemplateVersion = "3.2.1"
-lazy val libraryDeps = Def.setting { Seq(
-  "net.databinder" %% "unfiltered-filter" % unfilteredVersion,
-  "net.databinder" %% "unfiltered-jetty" % unfilteredVersion,
-  "org.antlr" % "stringtemplate" % stringtemplateVersion
-)}
 val launcherInterfaceVersion = "0.13.0"
 val servletApiVersion = "2.5"
-lazy val appDeps = Def.setting { Seq(
-  "org.scala-sbt" % "launcher-interface" % launcherInterfaceVersion % "provided",
-  "javax.servlet" % "servlet-api" % servletApiVersion
-)}
 
-lazy val pamflet: Project =
-  (project in file(".")).
-  settings(common: _*).
-  settings(
-    name := "pamflet",
-    ls.Plugin.LsKeys.skipWrite := true,
-    publishArtifact := false
-  ).
-  aggregate(knockoff, library, app)
-lazy val knockoff: Project =
-  (project in file("knockoff")).
-  settings(common: _*).
-  settings(
-    name := "pamflet-knockoff",
-    description := "Extensions to the Knockoff Markdown parser",
-    crossScalaVersions := Seq("2.9.0", "2.9.1", "2.10.3"),
-    libraryDependencies ++= knockoffDeps.value
-  )
-lazy val library: Project =
-  (project in file("library")).
-  settings(common: _*).
-  settings(
-    name := "pamflet-library",
-    description := "Core Pamflet library",
-    libraryDependencies ++= libraryDeps.value
-  ).
-  dependsOn(knockoff)
-lazy val app: Project =
-  (project in file("app")).
-  settings(common: _*).
-  settings(
-    name := "pamflet-app",
-    description :=
-      "Pamflet app for previewing and publishing project documentation",
-    libraryDependencies ++= appDeps.value
-  ).
-  dependsOn(library)
+val commonSettings = Seq(
+    name := "booklet",
+    organization := "org.digimead",
+    version <<= (baseDirectory in LocalRootProject) { (b) => scala.io.Source.fromFile(b / "version").mkString.trim },
+    //
+    // Dependencies
+    //
+    resolvers += "digimead-maven" at "http://storage.googleapis.com/maven.repository.digimead.org/",
+    resolvers += "sonatype-releases" at "https://oss.sonatype.org/service/local/repositories/releases/content/",
+    libraryDependencies += "com.tristanhunt" %% "knockoff" % "0.8.1",
+    libraryDependencies += "net.databinder" %% "unfiltered-filter" % unfilteredVersion,
+    libraryDependencies += "net.databinder" %% "unfiltered-jetty" % unfilteredVersion,
+    libraryDependencies += "org.antlr" % "stringtemplate" % stringtemplateVersion,
+    libraryDependencies += "org.fusesource.scalate" %% "scalate-core" % "1.6.1",
+    libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.5")
+
+lazy val booklet: Project = (project in file(".")) settings(commonSettings: _*) settings(
+    name := "booklet",
+    publishArtifact := false) aggregate(knockoff, library, app)
+lazy val knockoff: Project = (project in file("booklet-knockoff")) settings(commonSettings: _*) settings(
+    name := "booklet-knockoff",
+    description := "Extensions to the Knockoff Markdown parser")
+lazy val library: Project = (project in file("booklet-library")) settings(commonSettings: _*) settings(
+    name := "booklet-library",
+    description := "Core booklet library") dependsOn(knockoff)
+lazy val app: Project = (project in file("booklet-app")) settings(commonSettings: _*) settings(
+    name := "booklet-app",
+    description := "booklet app for previewing and publishing project documentation",
+    libraryDependencies += "org.scala-sbt" % "launcher-interface" % launcherInterfaceVersion % "provided",
+    libraryDependencies += "javax.servlet" % "servlet-api" % servletApiVersion,
+    libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.7.5") dependsOn(library)
+
+//logLevel := Level.Debug

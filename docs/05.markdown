@@ -1,0 +1,86 @@
+Options
+=======
+
+<table>
+  <tr>
+    <th>Key</th><th>Description</th><th>Value</th><th>Notes</th>
+  </tr>
+  <tr>
+    <td>defaultLanguage</td><td>A name of the default language.</td><td>en</td><td>changed by user</td>
+  </tr>
+  <tr>
+    <td>excludeFolder</td><td>An exclude regexp that applied to booklet markdowns.</td><td>\d+</td><td>changed by user</td>
+  </tr>
+  <tr>
+    <td>excludeMarkdown</td><td>An exclude regexp that applied to booklet markdowns.</td><td>\d+</td><td>changed by user</td>
+  </tr>
+  <tr>
+    <td>fileNameAsVersion</td><td>A name of the file with an index content.</td><td>Y/N</td><td>changed by user</td>
+  </tr>
+  <tr>
+    <td>indexMarkdown</td><td>A name of the file with an index content.</td><td>index.markdown</td><td>changed by user</td>
+  </tr>
+  <tr>
+    <td>indexMarkdownLocation</td><td>Full path to indexMarkdown.</td><td>/full/path/to/index.markdown</td><td>changed by application</td>
+  </tr>
+  <tr>
+    <td>index</td><td>Flag indicating whether the index should be generated.</td><td>Y/N</td><td>changed by user</td>
+  </tr>
+  <tr>
+    <td>indexTemplate</td><td>A name of the file with the index template.</td><td>index.scaml</td><td>changed by user</td>
+  </tr>
+  <tr>
+    <td>indexTemplateLocation</td><td>Full path to indexTemplate.</td><td>/full/path/to/index.scaml</td><td>changed by application</td>
+  </tr>
+  <tr>
+    <td>languages</td><td>A list of the booklet languages.</td><td>en, ja, ru</td><td>changed by user</td>
+  </tr>
+  <tr>
+    <td>manifest</td><td>A name of the file with site manifest for offline usage.</td><td>booklet.manifest</td><td>changed by user</td>
+  </tr>
+  <tr>
+    <td>offline</td><td>Flag indicating whether the generated content should support offline mode.</td><td>Y/N</td><td>changed by user</td>
+  </tr>
+  <tr>
+    <td>resources</td><td>Full path to user container with booklet template.</td><td>/full/path/to/directory/with/template</td><td>changed by user</td>
+  </tr>
+  <tr>
+    <td>templateDirectory</td><td>A name of the template directory.</td><td>template</td><td>changed by user</td>
+  </tr>
+  <tr>
+    <td>templatePageContent</td><td>A name of the PageContent template.</td><td>pageContent.scaml</td><td>changed by user</td>
+  </tr>
+  <tr>
+    <td>templatePageContentLocation</td><td>Full path to PageContent template.</td><td>/full/path/to/pageContent.scaml</td><td>changed by application</td>
+  </tr>
+  <tr>
+    <td>templatePageDeepContents</td><td>A name of the PageDeepContents template.</td><td>pageDeepContents.scaml</td><td>changed by user</td>
+  </tr>
+  <tr>
+    <td>templatePageDeepContentsLocation</td><td>Full path to PageDeepContents template.</td><td>/full/path/to/pageDeepContents.scaml</td><td>changed by application</td>
+  </tr>
+  <tr>
+    <td>templatePageScroll</td><td>A name of the PageScroll template.</td><td>pageScroll.scaml</td><td>changed by user</td>
+  </tr>
+  <tr>
+    <td>templatePageScrollLocation</td><td>Full path to PageScroll template.</td><td>/full/path/to/pageScroll.scaml</td><td>changed by application</td>
+  </tr>
+  <tr>
+    <td>templateProperties</td><td>A name of the file with template properties.</td><td>booklet.properties</td><td>changed by user</td>
+  </tr>
+  <tr>
+    <td>title</td><td>Page title.</td><td>My Title</td><td>changed by user</td>
+  </tr>
+  <tr>
+    <td>titlePattern</td><td>Title pattern that applied to each page title (not to the content title).</td><td>{{{ %s }}}</td><td>changed by user</td>
+  </tr>
+  <tr>
+    <td>titleFromFileName</td><td>Flag indicating whether page title should be generated from the file name.</td><td>Y/N</td><td>changed by user</td>
+  </tr>
+  <tr>
+    <td>tocReverse</td><td>Flag with toc sort order.</td><td>Y/N</td><td>changed by user</td>
+  </tr>
+  <tr>
+    <td>verbose</td><td>Flag indicating whether the library should be verbose.</td><td>Y/N</td><td>changed by user or application</td>
+  </tr>
+</table>
