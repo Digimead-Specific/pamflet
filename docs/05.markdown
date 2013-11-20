@@ -1,86 +1,182 @@
 Options
 =======
 
+There are several booklet options that affect the result. From the user point of view the options is a map of *key -> value* pairs. These pairs are held by [Properties][pr]. There are few sources of options:
+
+* file booklet.properties in markdown catalog (the lowest priority)
+* properties that is [emmedded into a markdown][embed]
+* user specified properties (the highest priority)
+
+While processing all options are merged and [converted][cv] to [Scalate attributes][sc].
+
+You may add your own options as well.
+
+##### List of the booklet options.
+
 <table>
   <tr>
-    <th>Key</th><th>Description</th><th>Value</th><th>Notes</th>
+    <th>Key</th><th>Description</th><th>Example Values</th><th>Notes</th>
   </tr>
   <tr>
-    <td>defaultLanguage</td><td>A name of the default language.</td><td>en</td><td>changed by user</td>
+    <td>[defaultLanguage](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L83)</td>
+    <td>A name of the default language.</td>
+    <td>en</td>
+    <td>changed by user</td>
   </tr>
   <tr>
-    <td>excludeFolder</td><td>An exclude regexp that applied to booklet markdowns.</td><td>\d+</td><td>changed by user</td>
+    <td>[excludeFolder](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L90)</td>
+    <td>An exclude regexp that applied to booklet markdowns.</td>
+    <td>\d+</td>
+    <td>[changed by user](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/BookletStorage.scala#L137)</td>
   </tr>
   <tr>
-    <td>excludeMarkdown</td><td>An exclude regexp that applied to booklet markdowns.</td><td>\d+</td><td>changed by user</td>
+    <td>[excludeMarkdown](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L94)</td>
+    <td>An exclude regexp that applied to booklet markdowns.</td>
+    <td>\d+</td>
+    <td>[changed by user](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/BookletStorage.scala#L193)</td>
   </tr>
   <tr>
-    <td>fileNameAsVersion</td><td>A name of the file with an index content.</td><td>Y/N</td><td>changed by user</td>
+    <td>[fileNameAsVersion](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L98)</td>
+    <td>A name of the file with an index content.</td>
+    <td>Y/N</td>
+    <td>changed by user</td>
   </tr>
   <tr>
-    <td>indexMarkdown</td><td>A name of the file with an index content.</td><td>index.markdown</td><td>changed by user</td>
+    <td>[index](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L102)</td>
+    <td>Flag indicating whether the index should be generated.</td>
+    <td>Y/N</td>
+    <td>changed by user</td>
   </tr>
   <tr>
-    <td>indexMarkdownLocation</td><td>Full path to indexMarkdown.</td><td>/full/path/to/index.markdown</td><td>changed by application</td>
+    <td>[indexMarkdown](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L109)</td>
+    <td>A name of the file with an index content.</td>
+    <td>index.markdown</td>
+    <td>changed by user</td>
   </tr>
   <tr>
-    <td>index</td><td>Flag indicating whether the index should be generated.</td><td>Y/N</td><td>changed by user</td>
+    <td>[indexMarkdownLocation](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L116)</td>
+    <td>Full path to indexMarkdown.</td>
+    <td>/full/path/to/index.markdown</td>
+    <td>[changed by application](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L247)</td>
   </tr>
   <tr>
-    <td>indexTemplate</td><td>A name of the file with the index template.</td><td>index.scaml</td><td>changed by user</td>
+    <td>[indexTemplate](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L129)</td>
+    <td>A name of the file with the index template.</td>
+    <td>index.scaml</td>
+    <td>changed by user</td>
   </tr>
   <tr>
-    <td>indexTemplateLocation</td><td>Full path to indexTemplate.</td><td>/full/path/to/index.scaml</td><td>changed by application</td>
+    <td>[indexTemplateLocation](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L136)</td>
+    <td>Full path to indexTemplate.</td>
+    <td>/full/path/to/index.scaml</td>
+    <td>[changed by application](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/BookletStorage.scala#L259)</td>
   </tr>
   <tr>
-    <td>languages</td><td>A list of the booklet languages.</td><td>en, ja, ru</td><td>changed by user</td>
+    <td>[languages](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L149)</td>
+    <td>A list of the booklet languages.</td>
+    <td>en, ja, ru</td>
+    <td>changed by user</td>
   </tr>
   <tr>
-    <td>manifest</td><td>A name of the file with site manifest for offline usage.</td><td>booklet.manifest</td><td>changed by user</td>
+    <td>[manifest](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L155)</td>
+    <td>A name of the file with site manifest for offline usage.</td>
+    <td>booklet.manifest</td>
+    <td>changed by user</td>
   </tr>
   <tr>
-    <td>offline</td><td>Flag indicating whether the generated content should support offline mode.</td><td>Y/N</td><td>changed by user</td>
+    <td>[offline](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L159)</td>
+    <td>Flag indicating whether the generated content should support offline mode.</td>
+    <td>Y/N</td>
+    <td>changed by user</td>
   </tr>
   <tr>
-    <td>resources</td><td>Full path to user container with booklet template.</td><td>/full/path/to/directory/with/template</td><td>changed by user</td>
+    <td>[resources](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L166)</td>
+    <td>Full path to user container with booklet template.</td>
+    <td>/full/path/to/directory/with/template</td>
+    <td>[changed by user](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/BookletStorage.scala#L299)</td>
   </tr>
   <tr>
-    <td>templateDirectory</td><td>A name of the template directory.</td><td>template</td><td>changed by user</td>
+    <td>[templateDirectory](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L176)</td>
+    <td>A name of the template directory.</td>
+    <td>template</td>
+    <td>changed by user</td>
   </tr>
   <tr>
-    <td>templatePageContent</td><td>A name of the PageContent template.</td><td>pageContent.scaml</td><td>changed by user</td>
+    <td>[templatePageContent](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L180)</td>
+    <td>A name of the PageContent template.</td>
+    <td>pageContent.scaml</td>
+    <td>changed by user</td>
   </tr>
   <tr>
-    <td>templatePageContentLocation</td><td>Full path to PageContent template.</td><td>/full/path/to/pageContent.scaml</td><td>changed by application</td>
+    <td>[templatePageContentLocation](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L184)</td>
+    <td>Full path to PageContent template.</td>
+    <td>/full/path/to/pageContent.scaml</td>
+    <td>[changed by application](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/BookletStorage.scala#L263)</td>
   </tr>
   <tr>
-    <td>templatePageDeepContents</td><td>A name of the PageDeepContents template.</td><td>pageDeepContents.scaml</td><td>changed by user</td>
+    <td>[templatePageDeepContents](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L197)</td>
+    <td>A name of the PageDeepContents template.</td>
+    <td>pageDeepContents.scaml</td>
+    <td>changed by user</td>
   </tr>
   <tr>
-    <td>templatePageDeepContentsLocation</td><td>Full path to PageDeepContents template.</td><td>/full/path/to/pageDeepContents.scaml</td><td>changed by application</td>
+    <td>[templatePageDeepContentsLocation](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L193)</td>
+    <td>Full path to PageDeepContents template.</td>
+    <td>/full/path/to/pageDeepContents.scaml</td>
+    <td>[changed by application](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/BookletStorage.scala#L267)</td>
   </tr>
   <tr>
-    <td>templatePageScroll</td><td>A name of the PageScroll template.</td><td>pageScroll.scaml</td><td>changed by user</td>
+    <td>[templatePageScroll](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L214)</td>
+    <td>A name of the PageScroll template.</td>
+    <td>pageScroll.scaml</td>
+    <td>changed by user</td>
   </tr>
   <tr>
-    <td>templatePageScrollLocation</td><td>Full path to PageScroll template.</td><td>/full/path/to/pageScroll.scaml</td><td>changed by application</td>
+    <td>[templatePageScrollLocation](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L218)</td>
+    <td>Full path to PageScroll template.</td>
+    <td>/full/path/to/pageScroll.scaml</td>
+    <td>[changed by application](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/BookletStorage.scala#L271)</td>
   </tr>
   <tr>
-    <td>templateProperties</td><td>A name of the file with template properties.</td><td>booklet.properties</td><td>changed by user</td>
+    <td>[templateProperties](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L231)</td>
+    <td>A name of the file with template properties.</td>
+    <td>booklet.properties</td>
+    <td>changed by user</td>
   </tr>
   <tr>
-    <td>title</td><td>Page title.</td><td>My Title</td><td>changed by user</td>
+    <td>title</td>
+    <td>Page title.</td>
+    <td>My Title</td>
+    <td>[changed by user](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/content/Leaf.scala#L36)</td>
   </tr>
   <tr>
-    <td>titlePattern</td><td>Title pattern that applied to each page title (not to the content title).</td><td>{{{ %s }}}</td><td>changed by user</td>
+    <td>[titlePattern](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L235)</td>
+    <td>Title pattern that applied to each page title (not to the content title).</td>
+    <td>{{{ %s }}}</td>
+    <td>[changed by user](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/content/Leaf.scala#L36)</td>
   </tr>
   <tr>
-    <td>titleFromFileName</td><td>Flag indicating whether page title should be generated from the file name.</td><td>Y/N</td><td>changed by user</td>
+    <td>[titleFromFileName](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L239)</td>
+    <td>Flag indicating whether page title should be generated from the file name.</td>
+    <td>Y/N</td>
+    <td>changed by user</td>
   </tr>
   <tr>
-    <td>tocReverse</td><td>Flag with toc sort order.</td><td>Y/N</td><td>changed by user</td>
+    <td>[tocReverse](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L243)</td>
+    <td>Flag with toc sort order.</td>
+    <td>Y/N</td>
+    <td>changed by user</td>
   </tr>
   <tr>
-    <td>verbose</td><td>Flag indicating whether the library should be verbose.</td><td>Y/N</td><td>changed by user or application</td>
+    <td>[verbose](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L247)</td>
+    <td>Flag indicating whether the library should be verbose.</td>
+    <td>Y/N</td>
+    <td>[changed by user or application](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-app/src/main/scala/org/digimead/booklet/Application.scala#L104)</td>
   </tr>
 </table>
+
+
+[pr]: http://docs.oracle.com/javase/6/docs/api/java/util/Properties.html
+[embed]: http://pamflet.databinder.net/Template+Properties.html#Properties+Front+Matter
+[sc]: http://scalate.fusesource.org/documentation/scalate-embedding-guide.html#Passing_Data_to_the_Template
+[cv]: https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/Printer.scala#L67

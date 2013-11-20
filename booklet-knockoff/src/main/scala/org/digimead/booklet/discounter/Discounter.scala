@@ -26,7 +26,7 @@ import com.tristanhunt.knockoff.{ Discounter ⇒ KDiscounter }
 
 object Discounter
   extends KDiscounter
-  with Fenced.Discounter
+  with Booklet.Discounter
   with Headers.Identified
   with Imgs.Html5
   with Smarty.Discounter

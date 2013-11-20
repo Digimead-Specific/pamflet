@@ -23,7 +23,7 @@
 package org.digimead.booklet.content
 
 import org.digimead.booklet.Resources
-import org.digimead.booklet.discounter.Fenced
+import org.digimead.booklet.discounter.Booklet
 
 import com.tristanhunt.knockoff.Block
 
@@ -31,7 +31,7 @@ trait AuthoredPage extends Page {
   def blocks: Seq[Block]
   lazy val referencedLangs =
     (Set.empty[String] /: blocks) {
-      case (s, Fenced.CodeBlock(_, _, Some(lang))) ⇒ s + lang
+      case (s, Booklet.CodeBlock(_, _, Some(lang))) ⇒ s + lang
       case (s, _) ⇒ s
     }
   lazy val prettifyLangs = referencedLangs.filter { lang ⇒

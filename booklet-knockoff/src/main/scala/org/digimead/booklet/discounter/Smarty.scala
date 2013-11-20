@@ -42,7 +42,7 @@ object Smarty {
     override def apply(chunk: Chunk): Seq[Span] = {
       chunk match {
         case IndentedChunk(content) ⇒ List(new Text(content))
-        case Fenced.Chunk(content, _) ⇒ List(new Text(content))
+        case Booklet.Chunk(content, _) ⇒ List(new Text(content))
         case _ ⇒ convert(chunk.content, Nil)
       }
     }
