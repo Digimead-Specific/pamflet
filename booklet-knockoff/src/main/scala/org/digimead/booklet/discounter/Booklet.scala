@@ -134,9 +134,7 @@ object Booklet {
         super.blockToXHTML(block)
     }
     def fencedChunkToXHTML(text: Text, language: Option[String]) =
-      <pre><code class={
-        language.map { "prettyprint lang-" + _ }.getOrElse("")
-      }>{ text.content }</code></pre>
+      <pre class="prettyprint"><code class={ language.map { "prettyprint lang-" + _ }.getOrElse("") }>{ text.content }</code></pre>
   }
 
   case class Chunk(val content: String, language: Option[String]) extends KChunk {

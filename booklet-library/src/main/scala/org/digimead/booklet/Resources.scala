@@ -38,8 +38,9 @@ object Resources {
   val log = LoggerFactory.getLogger(getClass)
 
   def apply() = new java.net.URL(getClass.getResource("/template/marker"), ".")
-  def paths(prettifyLangs: Set[String] = Set("apollo", "css", "hs", "lisp", "lua", "ml",
-    "proto", "scala", "sql", "vb", "vhdl", "wiki", "yaml"), withTemplates: Boolean = false)(implicit properties: Properties) =
+  def paths(prettifyLangs: Set[String] = Set("apollo", "basic", "clj", "css", "dart", "erlang",
+    "go", "hs", "lisp", "llvm", "lua", "matlab", "ml", "mumps", "n", "pascal", "proto",
+    "r", "rd", "scala", "sql", "tcl", "tex", "vb", "vhdl", "wiki", "xq", "yaml"), withTemplates: Boolean = false)(implicit properties: Properties) =
     {
       val elements = ("CSS.scaml" :: "Comment.scaml" :: "Favicon.scaml" :: "GoogleAnalytics.scaml" ::
         "LanguageBar.scaml" :: "PageNextNav.scaml" :: "PagePrevNav.scaml" :: "Prettify.scaml" :: "Twitter.scaml" :: Nil) map { "element/" + _ }

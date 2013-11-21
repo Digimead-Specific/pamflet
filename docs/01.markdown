@@ -1,0 +1,106 @@
+Usage
+=====
+
+### Components
+
+Booklet itself consists of 3 parts:
+
+* **[booklet-library][bl]** - Core part that provides storage, options, [Scalate][sc] publishing logic;
+* **[booklet-knockoff][bk]** - [Knockoff][kf] integration part that enhance standard [Knockoff][kf] parsers;
+* **[booklet-app][ba]** - application, that compatible with [SBT launcher][sl].
+
+### Use as the standalone application
+
+You may start it in *NIX environment with command line like this:
+
+```lua
+java \
+  -Dsbt.boot.properties=/home/user/booklet/booklet-app.configuration \
+  -jar /home/user/booklet/sbt-launch.jar -- @mybooklet.properties
+```
+
+where
+
+* **sbt.boot.properties** - location of the [application configuration][ad]
+* **sbt-launch.jar** - the latest ;-) [launcher from SBT][ll]
+* **booklet.properties** - user options, for example. Use *'-h'* for help
+
+#### Application configuration
+
+The typical [application configuration][ad] is provided bellow. You may copy'n'paste it or [download sample one][acs] and modify. Change **1.2.3.4-SNAPSHOT** version to the latest available.
+
+```lua
+[scala]
+  version: 2.10.3
+[app]
+  org: org.digimead
+  name: booklet-app
+  version: 1.2.3.4-SNAPSHOT
+  class: org.digimead.booklet.Application
+  cross-versioned: binary
+[repositories]
+  local
+  maven-central
+  digimead-maven: http://storage.googleapis.com/maven.repository.digimead.org/
+[boot]
+  directory: \${user.home}/.sbt/booklet-boot
+```
+
+#### SBT launcher
+
+You may use any available [SBT launcher][ll] I recommend the latest one.
+
+#### User options
+
+File with user options may be specified in **@file** format. For example I used bellow options file while designing Booklet:
+
+```lua
+resources: /my/path/to/template-dev
+user: digimead-specific
+project: Booklet
+artifacts: booklet-app, booklet-knockoff, booklet-library
+logo: http://commondatastorage.googleapis.com/digimead/booklet.png
+disqus: Booklet
+```
+
+Of course, for publishing I provided different options. I specified path to production template with compressed resources and adjusted other parameters.
+
+#### Running
+
+**docs** directory with markdown files [must be exists][docs]. After start you will see something like:
+
+```lua
+[main] INFO org.digimead.booklet.template.Preview\$ - Warm up Scalate engine.
+[main] INFO org.eclipse.jetty.server.Server - jetty-7.6.9.v20130131
+[main] INFO org.eclipse.jetty.server.handler.ContextHandler - started o.e.j.s.ServletContextHandler{/,null}
+[main] INFO org.eclipse.jetty.server.AbstractConnector - Started SocketConnector@127.0.0.1:50059
+
+Previewing `docs`. Press CTRL+C to stop.
+```
+
+The *Booklet* is ready to process HTTP requests on **127.0.0.1:50059**.
+
+### Use as a library
+
+Add Booklet to you application and invoke
+
+```scala
+Produce(BookletStorage(input, bookletProperties).globalized, output)
+```
+
+where
+
+* input - directory with markdown files
+* output - directory with transformation result
+* bookletProperties - user options
+
+[bl]: https://github.com/digimead-specific/Booklet/tree/master/booklet-library
+[bk]: https://github.com/digimead-specific/Booklet/tree/master/booklet-knockoff
+[ba]: https://github.com/digimead-specific/Booklet/tree/master/booklet-app
+[sc]: http://scalate.fusesource.org/
+[kf]: https://github.com/tristanjuricek/knockoff
+[sl]: http://www.scala-sbt.org/0.13.0/docs/Detailed-Topics/Launcher.html
+[ad]: http://www.scala-sbt.org/release/docs/Detailed-Topics/Launcher#configuration
+[ll]: http://www.scala-sbt.org/release/docs/Getting-Started/Setup.html#manual-installation
+[acs]: https://raw.github.com/digimead-specific/Booklet/master/docs/simple.configuration
+[docs]: https://github.com/digimead-specific/Booklet/blob/46c0f211e99a674531d1a89621d6aee08575ea62/booklet-app/src/main/scala/org/digimead/booklet/Application.scala#L61
