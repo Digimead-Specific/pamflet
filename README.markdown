@@ -16,5 +16,5 @@ The differences of Booklet:
 
 [pf]: https://github.com/n8han/pamflet
 [pd]: http://pamflet.databinder.net
-[sl]: http://scalate.fusesource.org/
+[sl]: http://scalate.fusesource.org
 [cw]: http://compass-style.org/help/tutorials/command-line/
