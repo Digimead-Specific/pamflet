@@ -22,6 +22,8 @@
 
 package org.digimead.booklet.discounter
 
+import java.util.Properties
+
 import scala.annotation.tailrec
 import scala.util.parsing.input.Position
 import scala.util.parsing.input.Reader
@@ -126,6 +128,8 @@ object Booklet {
     private def foldedString(texts: List[KChunk]): String = ("" /: texts)((current, text) ⇒ current + text.content)
   }
   trait Discounter extends KDiscounter {
+    val properties: Properties
+
     override def newChunkParser: KChunkParser = new KChunkParser with ChunkParser
     override def blockToXHTML: Block ⇒ xml.Node = block ⇒ block match {
       case CodeBlock(text, _, language) ⇒
@@ -133,8 +137,10 @@ object Booklet {
       case _ ⇒
         super.blockToXHTML(block)
     }
-    def fencedChunkToXHTML(text: Text, language: Option[String]) =
-      <pre class="prettyprint"><code class={ language.map { "prettyprint lang-" + _ }.getOrElse("") }>{ text.content }</code></pre>
+    def fencedChunkToXHTML(text: Text, language: Option[String]) = {
+      val fencedClasses = if (this.properties.getProperty("codeLineNums", "N").toUpperCase() == "Y") "prettyprint linenums" else "prettyprint"
+      <pre class={ fencedClasses }><code class={ language.map { "prettyprint lang-" + _ }.getOrElse("") }>{ text.content }</code></pre>
+    }
   }
 
   case class Chunk(val content: String, language: Option[String]) extends KChunk {

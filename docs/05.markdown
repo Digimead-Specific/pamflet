@@ -18,6 +18,12 @@ You may add your own options as well.
     <th>Key</th><th>Description</th><th>Example Values</th><th>Notes</th>
   </tr>
   <tr>
+    <td>[codeLineNums]()</td>
+    <td>Flag indicating whether the line numbers in code should be visible.</td>
+    <td>Y/N</td>
+    <td>changed by user</td>
+  </tr>
+  <tr>
     <td>[defaultLanguage](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L83)</td>
     <td>A name of the default language.</td>
     <td>en</td>
@@ -26,14 +32,14 @@ You may add your own options as well.
   <tr>
     <td>[excludeFolder](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L90)</td>
     <td>An exclude regexp that applied to booklet markdowns.</td>
-    <td>\d+</td>
-    <td>[changed by user](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/BookletStorage.scala#L137)</td>
+    <td>[\d+](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/BookletStorage.scala#L137)</td>
+    <td>changed by user</td>
   </tr>
   <tr>
     <td>[excludeMarkdown](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L94)</td>
     <td>An exclude regexp that applied to booklet markdowns.</td>
-    <td>\d+</td>
-    <td>[changed by user](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/BookletStorage.scala#L193)</td>
+    <td>[\d+](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/BookletStorage.scala#L193)</td>
+    <td>changed by user</td>
   </tr>
   <tr>
     <td>[fileNameAsVersion](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L98)</td>
@@ -92,8 +98,8 @@ You may add your own options as well.
   <tr>
     <td>[resources](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L166)</td>
     <td>Full path to user container with booklet template.</td>
-    <td>/full/path/to/directory/with/template</td>
-    <td>[changed by user](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/BookletStorage.scala#L299)</td>
+    <td>[/full/path/to/directory/with/template](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/BookletStorage.scala#L299)</td>
+    <td>changed by user</td>
   </tr>
   <tr>
     <td>[templateDirectory](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L176)</td>
@@ -146,14 +152,14 @@ You may add your own options as well.
   <tr>
     <td>title</td>
     <td>Page title.</td>
-    <td>My Title</td>
-    <td>[changed by user](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/content/Leaf.scala#L36)</td>
+    <td>[My Title](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/content/Leaf.scala#L36)</td>
+    <td>changed by user</td>
   </tr>
   <tr>
     <td>[titlePattern](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L235)</td>
     <td>Title pattern that applied to each page title (not to the content title).</td>
-    <td>{{{ %s }}}</td>
-    <td>[changed by user](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/content/Leaf.scala#L36)</td>
+    <td>[{{{ %s }}}](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/content/Leaf.scala#L36)</td>
+    <td>changed by user</td>
   </tr>
   <tr>
     <td>[titleFromFileName](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L239)</td>
@@ -174,7 +180,6 @@ You may add your own options as well.
     <td>[changed by user or application](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-app/src/main/scala/org/digimead/booklet/Application.scala#L104)</td>
   </tr>
 </table>
-
 
 [pr]: http://docs.oracle.com/javase/6/docs/api/java/util/Properties.html
 [embed]: http://pamflet.databinder.net/Template+Properties.html#Properties+Front+Matter

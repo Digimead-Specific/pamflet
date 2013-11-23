@@ -22,9 +22,11 @@
 
 package org.digimead.booklet.discounter
 
+import java.util.Properties
+
 import com.tristanhunt.knockoff.{ Discounter ⇒ KDiscounter }
 
-object Discounter
+class Discounter(val properties: Properties)
   extends KDiscounter
   with Booklet.Discounter
   with Headers.Identified

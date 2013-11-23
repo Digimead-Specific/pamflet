@@ -22,10 +22,16 @@
 
 package org.digimead.booklet.discounter
 
-import com.tristanhunt.knockoff._
+import com.tristanhunt.knockoff.Block
+import com.tristanhunt.knockoff.{ Discounter ⇒ KDiscounter }
+import com.tristanhunt.knockoff.HTMLSpan
+import com.tristanhunt.knockoff.Header
+import com.tristanhunt.knockoff.Span
+import com.tristanhunt.knockoff.Text
+import com.tristanhunt.knockoff.TextWriter
 
 object Headers {
-  trait Identified extends Discounter { self: TextWriter ⇒
+  trait Identified extends KDiscounter { self: TextWriter ⇒
     def headerText(spans: Seq[Span]): String = {
       val stringWriter = new java.io.StringWriter
       spans.map(self.spanToText(_)(stringWriter))

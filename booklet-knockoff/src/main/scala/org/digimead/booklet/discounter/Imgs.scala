@@ -24,11 +24,13 @@ package org.digimead.booklet.discounter
 
 import scala.xml.Node
 
-import com.tristanhunt.knockoff._
+import com.tristanhunt.knockoff.{ Discounter ⇒ KDiscounter }
+import com.tristanhunt.knockoff.Span
+import com.tristanhunt.knockoff.XHTMLWriter
 
 object Imgs {
   // see http://www.w3.org/html/wg/drafts/html/master/syntax.html#void-elements
-  trait Html5 extends Discounter { self: XHTMLWriter ⇒
+  trait Html5 extends KDiscounter { self: XHTMLWriter ⇒
     override def imageLinkToXHTML: (Seq[Span], String, Option[String]) ⇒ Node = {
       (spans, url, title) ⇒
         <img src={ url } title={ title.getOrElse(null) } alt={ spans.map(spanToXHTML(_)) }/>

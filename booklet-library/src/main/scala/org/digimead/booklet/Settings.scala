@@ -26,6 +26,8 @@ import java.io.File
 import java.util.Properties
 
 object Settings {
+  /** Flag indicating whether the line numbers in code should be visible. */
+  val codeLineNumsKey = "codeLineNums"
   /** A name of the default language. */
   val defaultLanguageKey = "defaultLanguage"
   /** An exclude regexp that applied to booklet folders. */
@@ -78,6 +80,10 @@ object Settings {
   val tocReverseKey = "tocReverse"
   /** Flag indicating whether the library should be verbose. */
   val verboseKey = "verbose"
+
+  /** Get codeLineNums flag. */
+  def codeLineNums(implicit properties: Properties): Boolean =
+    properties.getProperty(codeLineNumsKey, "N").toUpperCase() == "Y"
 
   /** Get the name of the default language. */
   def defaultLanguage(implicit properties: Properties): String =

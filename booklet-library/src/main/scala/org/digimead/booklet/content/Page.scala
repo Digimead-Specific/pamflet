@@ -83,7 +83,12 @@ object Page {
   }
   def tocLink(page: Page, link: Page): xml.NodeSeq =
     if (link == page)
-      <div class="current">{ link.name }</div>
+      <div class="current">{ link.name }</div> ++ {
+        link match {
+          case page: ContentPage ⇒ Outline(page)
+          case _ ⇒ Nil
+        }
+      }
     else
       <div><a href={ tocHRef(page, link) }>{ link.name }</a></div> ++ {
         (link, page) match {

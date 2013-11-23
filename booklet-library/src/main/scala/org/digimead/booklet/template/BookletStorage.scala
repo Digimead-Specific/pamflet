@@ -103,7 +103,7 @@ class BookletStorage(val input: File, val properties: Properties = new Propertie
   def knock(file: File)(implicit properties: Properties): (Seq[Block], Properties) = {
     val frontin = Frontin(read(file))
     val markdownProperties = Booklet.mergeWithStrings(properties, frontin.header.toSeq: _*)
-    try ((Discounter.knockoff(Printer.process(frontin body)(markdownProperties)), markdownProperties))
+    try ((new Discounter(properties).knockoff(Printer.process(frontin body)(markdownProperties)), markdownProperties))
     catch {
       case e: Throwable ⇒
         Console.err.println("Error while processing " + file.toString)

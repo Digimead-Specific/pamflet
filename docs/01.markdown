@@ -23,7 +23,7 @@ where
 
 * **sbt.boot.properties** - location of the [application configuration][ad]
 * **sbt-launch.jar** - the latest ;-) [launcher from SBT][ll]
-* **booklet.properties** - user options, for example. Use *'-h'* for help
+* **mybooklet.properties** - argument with user options, for example. Use *'-h'* for help
 
 #### Application configuration
 
