@@ -1,4 +1,4 @@
-Booklet[![Build Status](https://travis-ci.org/digimead-specific/Booklet.png)](https://travis-ci.org/digimead-specific/Booklet)
+Booklet [![Build Status](https://travis-ci.org/digimead-specific/Booklet.png)](https://travis-ci.org/digimead-specific/Booklet)
 =======
 
 *Booklet* is a publishing software for short texts, particularly user documentation. It is designed to be easy to write and read on any platform.

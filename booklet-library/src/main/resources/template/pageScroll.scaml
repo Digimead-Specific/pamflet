@@ -5,4 +5,4 @@
 - layout("default.scaml")
   - if (Page.tocVisibilityClass(page) != "hide")
     = render("toc.scaml")
-  ~ Discounter.toXHTML(page.blocks)
+  ~ new Discounter(page.properties).toXHTML(page.blocks)

@@ -34,6 +34,7 @@ val commonSettings = Seq(
     libraryDependencies += "net.databinder" %% "unfiltered-filter" % unfilteredVersion,
     libraryDependencies += "net.databinder" %% "unfiltered-jetty" % unfilteredVersion,
     libraryDependencies += "org.antlr" % "stringtemplate" % stringtemplateVersion,
+    libraryDependencies += "org.jsoup" % "jsoup" % "1.7.3",
     libraryDependencies += "org.fusesource.scalate" %% "scalate-core" % "1.6.1",
     libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.5")
 

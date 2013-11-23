@@ -18,7 +18,7 @@ You may add your own options as well.
     <th>Key</th><th>Description</th><th>Example Values</th><th>Notes</th>
   </tr>
   <tr>
-    <td>[codeLineNums]()</td>
+    <td>[codeLineNums](https://github.com/digimead-specific/Booklet/blob/21d6a0feb3121028ec32550f05f113376ec2332d/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L85)</td>
     <td>Flag indicating whether the line numbers in code should be visible.</td>
     <td>Y/N</td>
     <td>changed by user</td>

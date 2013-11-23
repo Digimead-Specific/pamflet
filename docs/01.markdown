@@ -48,7 +48,7 @@ The typical [application configuration][ad] is provided bellow. You may copy'n'p
 
 #### SBT launcher
 
-You may use any available [SBT launcher][ll] I recommend the latest one.
+You may use any available [SBT launcher][ll]. I recommend the latest one.
 
 #### User options
 

@@ -16,7 +16,7 @@
           -if (content.title != page.name)
             \- #{page.name}
   .span-16.prepend-1.append-1.content<
-    ~ Discounter.toXHTML(page.blocks)
+    ~ new Discounter(page.properties).toXHTML(page.blocks)
   - next.map
     - case next: AuthoredPage =>
       .bottom.nav.span-16
