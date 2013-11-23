@@ -85,7 +85,7 @@ object Page {
     if (link == page)
       <div class="current">{ link.name }</div> ++ {
         link match {
-          case page: ContentPage ⇒ Outline(page)
+          case page: ContentPage ⇒ Outline(page, true)
           case _ ⇒ Nil
         }
       }

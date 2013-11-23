@@ -30,7 +30,9 @@ import com.tristanhunt.knockoff.Header
 
 object Outline {
   private case class Return(nodes: xml.NodeSeq, rest: Seq[Header])
-  def apply(page: AuthoredPage) = {
+  def apply(page: AuthoredPage, current: Boolean = false) = {
+    val outLineClass = if (current) "current outline" else "outline"
+
     def anchor(name: String) =
       <a href={ Printer.webify(page) + Headers.BlockNames.fragment(name) }>{ name }</a>
 
@@ -43,7 +45,7 @@ object Outline {
           Return((
             <li>
               { anchor(name) }
-              <ul class="outline"> { nested.nodes } </ul>
+              <ul class={ outLineClass }> { nested.nodes } </ul>
             </li>) ++ after.nodes, after.rest)
         case Seq(a, tail @ _*) if a.level > cur ⇒
           val Return(nodes, rest) = build(blocks, a.level)
@@ -60,7 +62,7 @@ object Outline {
     }
     headers match {
       case Seq(head, elem, rest @ _*) ⇒
-        <ul class="outline"> {
+        <ul class={ outLineClass }> {
           build(elem +: rest, 0).nodes
         } </ul>
       case _ ⇒ Seq.empty
