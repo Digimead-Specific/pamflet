@@ -5,7 +5,7 @@ Booklet [![Build Status](https://travis-ci.org/digimead-specific/Booklet.png)](h
 *Booklet* is a fork of [Pamflet][pf] by Nathan Hamblen and others. Before use *Booklet* please read [Pamflet documentation][pd]. Most things that work
 in [Pamflet][pf] work in *Booklet* too.
 
-The differences of Booklet:
+Features of Booklet:
 
 * hardcoded template moved on [Scalate][sl];
 * ability to use markdown inside HTML blocks;
