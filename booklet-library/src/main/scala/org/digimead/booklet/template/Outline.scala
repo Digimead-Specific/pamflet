@@ -23,7 +23,7 @@
 package org.digimead.booklet.template
 
 import org.digimead.booklet.content.AuthoredPage
-import org.digimead.booklet.discounter.Discounter
+import org.digimead.booklet.discounter.BookletDiscounter
 import org.digimead.booklet.discounter.Headers
 
 import com.tristanhunt.knockoff.Header
@@ -41,7 +41,7 @@ object Outline {
         case Seq(a, b, tail @ _*) if a.level == cur && b.level > cur ⇒
           val nested = build(b +: tail, b.level)
           val after = build(nested.rest, cur)
-          val name = new Discounter(page.properties).headerText(a.spans)
+          val name = BookletDiscounter.headerText(a.spans)
           Return((
             <li>
               { anchor(name) }
@@ -52,7 +52,7 @@ object Outline {
           Return(nodes, rest)
         case Seq(a, tail @ _*) if a.level == cur ⇒
           val Return(nodes, rest) = build(tail, cur)
-          val name = new Discounter(page.properties).headerText(a.spans)
+          val name = BookletDiscounter.headerText(a.spans)
           Return((<li> { anchor(name) } </li>) ++ nodes, rest)
         case _ ⇒
           Return(Seq.empty, blocks)

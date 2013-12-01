@@ -18,6 +18,8 @@ Features of Booklet:
 
 This documentation is created with Booklet. Such result is a hardly available with hardcoded template. Scalate gave it a new breath of life.
 
+<hr/>
+
 > [Latest stable version $version$]($stable$)
 
 > [Latest development version $version$]($development$)

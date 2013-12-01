@@ -14,6 +14,23 @@ Features of Booklet:
 
 [See Booklet documentation](http://digimead-specific.github.io/Booklet/).
 
+Authors
+-------
+
+* Alexey Aksenov
+* Nathan Hamblen and others (as Pamflet library)
+
+License
+-------
+
+Booklet is licensed to you under the terms of the GNU Lesser General Public License,
+version 3.0, a copy of which has been included in the LICENSE file.
+
+Copyright
+---------
+
+Copyright © 2012-2013 Alexey B. Aksenov/Ezh. All rights reserved.
+
 [pf]: https://github.com/n8han/pamflet
 [pd]: http://pamflet.databinder.net
 [sl]: http://scalate.fusesource.org

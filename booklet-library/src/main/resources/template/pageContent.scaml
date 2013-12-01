@@ -1,7 +1,6 @@
 -import org.digimead.booklet.content.AuthoredPage
 -import org.digimead.booklet.content.Content
 -import org.digimead.booklet.content.Page
--import org.digimead.booklet.discounter.Discounter
 -import org.digimead.booklet.template.Printer
 -@ val arrow: String
 -@ val content: Content
@@ -16,7 +15,7 @@
           -if (content.title != page.name)
             \- #{page.name}
   .span-16.prepend-1.append-1.content<
-    ~ new Discounter(page.properties).toXHTML(page.blocks)
+    ~ page.knockoff(_.toXHTML(page.blocks))
   - next.map
     - case next: AuthoredPage =>
       .bottom.nav.span-16

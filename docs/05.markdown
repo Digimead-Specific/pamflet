@@ -13,6 +13,7 @@ You may add your own options as well.
 
 ##### List of the booklet options.
 
+<!-- htmlAsMarkdown:Y -->
 <table>
   <tr>
     <th>Key</th><th>Description</th><th>Example Values</th><th>Notes</th>
@@ -44,6 +45,12 @@ You may add your own options as well.
   <tr>
     <td>[fileNameAsVersion](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L98)</td>
     <td>A name of the file with an index content.</td>
+    <td>Y/N</td>
+    <td>changed by user</td>
+  </tr>
+  <tr>
+    <td>htmlAsMarkdown</td>
+    <td>Flag indicating whether the HTML content should be processed as markdown.</td>
     <td>Y/N</td>
     <td>changed by user</td>
   </tr>

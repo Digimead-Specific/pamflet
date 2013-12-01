@@ -34,7 +34,7 @@ import org.digimead.booklet.content.Content
 import org.digimead.booklet.content.Globalized
 import org.digimead.booklet.content.Leaf
 import org.digimead.booklet.content.Section
-import org.digimead.booklet.discounter.Discounter
+import org.digimead.booklet.discounter.BookletDiscounter
 import org.slf4j.LoggerFactory
 
 import com.tristanhunt.knockoff.Block
@@ -103,7 +103,7 @@ class BookletStorage(val input: File, val properties: Properties = new Propertie
   def knock(file: File)(implicit properties: Properties): (Seq[Block], Properties) = {
     val frontin = Frontin(read(file))
     val markdownProperties = Booklet.mergeWithStrings(properties, frontin.header.toSeq: _*)
-    try ((new Discounter(properties).knockoff(Printer.process(frontin body)(markdownProperties)), markdownProperties))
+    try ((BookletDiscounter.knockoff(Printer.process(frontin body)(markdownProperties), markdownProperties), markdownProperties))
     catch {
       case e: Throwable ⇒
         Console.err.println("Error while processing " + file.toString)

@@ -32,12 +32,7 @@ import com.tristanhunt.knockoff.TextWriter
 
 object Headers {
   trait Identified extends KDiscounter { self: TextWriter ⇒
-    def headerText(spans: Seq[Span]): String = {
-      val stringWriter = new java.io.StringWriter
-      spans.map(self.spanToText(_)(stringWriter))
-      return stringWriter.toString
-    }
-    override def headerToXHTML = (level, spans) ⇒ {
+    override lazy val headerToXHTML: (Int, Seq[Span]) ⇒ xml.Node = (level, spans) ⇒ {
       val name = BlockNames.encode(BlockNames.textOf(spans))
       val spanned = spans.map(spanToXHTML)
       val anchored = spanned ++
@@ -52,6 +47,11 @@ object Headers {
         case _ ⇒
           <div class={ "header" + level }>{ spanned }</div>
       }
+    }
+    def headerText(spans: Seq[Span]): String = {
+      val stringWriter = new java.io.StringWriter
+      spans.map(self.spanToText(_)(stringWriter))
+      return stringWriter.toString
     }
   }
 

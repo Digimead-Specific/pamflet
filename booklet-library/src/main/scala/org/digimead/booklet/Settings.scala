@@ -36,6 +36,8 @@ object Settings {
   val excludeMarkdownKey = "excludeMarkdown"
   /** Flag indicating whether the file name will be casted to version type. */
   val fileNameAsVersionKey = "fileNameAsVersion"
+  /** Flag indicating whether the HTML content should be processed as markdown. */
+  val htmlAsMarkdownKey = "htmlAsMarkdown"
   /** A name of the file with an index content. */
   val indexMarkdownKey = "indexMarkdown"
   /** Full path to indexMarkdown. */
@@ -103,6 +105,10 @@ object Settings {
   /** Get fileNameAsVersion flag. */
   def fileNameAsVersion(implicit properties: Properties): Boolean =
     properties.getProperty(fileNameAsVersionKey, "N").toUpperCase() == "Y"
+
+  /** Get flag indicating whether the content of the HTML tag should be processed as markdown. */
+  def htmlAsMarkdown(implicit properties: Properties): Boolean =
+    properties.getProperty(htmlAsMarkdownKey, "N").toUpperCase() == "Y"
 
   /** Get index flag. */
   def index(implicit properties: Properties): Boolean =

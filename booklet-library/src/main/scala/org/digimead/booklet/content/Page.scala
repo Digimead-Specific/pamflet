@@ -23,10 +23,11 @@
 package org.digimead.booklet.content
 
 import java.util.Properties
-
 import org.digimead.booklet.template.Printer
 import org.digimead.booklet.discounter.Headers
 import org.digimead.booklet.template.Outline
+import com.tristanhunt.knockoff.Block
+import org.digimead.booklet.discounter.BookletDiscounter
 
 trait Page {
   val fileName: Option[String]
@@ -41,6 +42,9 @@ trait Page {
   def getProperty(key: String) = Option(properties.get(key)) map { _.toString }
   /** Set property for given key if present. */
   def setProperty(key: String, value: String) = properties.setProperty(key, value)
+  /** Process block. */
+  def knockoff[T](f: BookletDiscounter ⇒ T): T =
+    BookletDiscounter.pageProperties.withValue(properties)(f(BookletDiscounter))
 }
 
 object Page {
