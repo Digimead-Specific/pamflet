@@ -38,16 +38,6 @@ object Settings {
   val fileNameAsVersionKey = "fileNameAsVersion"
   /** Flag indicating whether the HTML content should be processed as markdown. */
   val htmlAsMarkdownKey = "htmlAsMarkdown"
-  /** A name of the file with an index content. */
-  val indexMarkdownKey = "indexMarkdown"
-  /** Full path to indexMarkdown. */
-  val indexMarkdownLocationKey = "indexMarkdownLocation"
-  /** Flag indicating whether the index should be generated. */
-  val indexKey = "index"
-  /** A name of the file with the index template. */
-  val indexTemplateKey = "indexTemplate"
-  /** Full path to indexTemplate. */
-  val indexTemplateLocationKey = "indexTemplateLocation"
   /** A list of the booklet languages. */
   val languagesKey = "languages"
   /** A name of the file with site manifest for offline usage. */
@@ -109,53 +99,6 @@ object Settings {
   /** Get flag indicating whether the content of the HTML tag should be processed as markdown. */
   def htmlAsMarkdown(implicit properties: Properties): Boolean =
     properties.getProperty(htmlAsMarkdownKey, "N").toUpperCase() == "Y"
-
-  /** Get index flag. */
-  def index(implicit properties: Properties): Boolean =
-    properties.getProperty(indexKey, "N").toUpperCase() == "Y"
-  /** Set index flag. */
-  def index_=(arg: Boolean)(implicit properties: Properties): Unit =
-    properties.setProperty(indexKey, if (arg) "Y" else "N")
-
-  /** Get the name of the file with index content. */
-  def indexMarkdown(implicit properties: Properties): String =
-    properties.getProperty(indexMarkdownKey, "index.markdown")
-  /** Set the name of the file with index content. */
-  def indexMarkdown_=(arg: String)(implicit properties: Properties): Unit =
-    properties.setProperty(indexMarkdownKey, arg)
-
-  /** Get the location of the index content. */
-  def indexMarkdownLocation(implicit properties: Properties): Option[File] =
-    Option(properties.getProperty(indexMarkdownLocationKey)) flatMap { l ⇒
-      val location = new File(l)
-      if (location.isFile() && location.canRead())
-        Some(location)
-      else
-        None
-    }
-  /** Set the location of the index content. */
-  def indexMarkdownLocation_=(arg: File)(implicit properties: Properties): Unit =
-    properties.setProperty(indexMarkdownLocationKey, arg.getCanonicalPath())
-
-  /** Get the name of index template. */
-  def indexTemplate(implicit properties: Properties): String =
-    properties.getProperty(indexTemplateKey, "index.scaml")
-  /** Set the name of index template. */
-  def indexTemplate_=(arg: String)(implicit properties: Properties): Unit =
-    properties.setProperty(indexTemplateKey, arg)
-
-  /** Get the location of the index template. */
-  def indexTemplateLocation(implicit properties: Properties): Option[File] =
-    Option(properties.getProperty(indexTemplateLocationKey)) flatMap { l ⇒
-      val location = new File(l)
-      if (location.isFile() && location.canRead())
-        Some(location)
-      else
-        None
-    }
-  /** Set the location of the index template. */
-  def indexTemplateLocation_=(arg: File)(implicit properties: Properties): Unit =
-    properties.setProperty(indexTemplateLocationKey, arg.getCanonicalPath())
 
   /** Get all booklet languages. */
   def languages(implicit properties: Properties): Seq[String] = Option(properties.get(languagesKey)).map(_.toString()) match {

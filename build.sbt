@@ -17,7 +17,6 @@
 // DEVELOPMENT CONFIGURATION
 
 val unfilteredVersion = "0.7.0"
-val stringtemplateVersion = "3.2.1"
 val launcherInterfaceVersion = "0.13.0"
 val servletApiVersion = "2.5"
 
@@ -33,7 +32,6 @@ val commonSettings = Seq(
     libraryDependencies += "com.tristanhunt" %% "knockoff" % "0.8.1",
     libraryDependencies += "net.databinder" %% "unfiltered-filter" % unfilteredVersion,
     libraryDependencies += "net.databinder" %% "unfiltered-jetty" % unfilteredVersion,
-    libraryDependencies += "org.antlr" % "stringtemplate" % stringtemplateVersion,
     libraryDependencies += "org.jsoup" % "jsoup" % "1.7.3",
     libraryDependencies += "org.fusesource.scalate" %% "scalate-core" % "1.6.1",
     libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.5")

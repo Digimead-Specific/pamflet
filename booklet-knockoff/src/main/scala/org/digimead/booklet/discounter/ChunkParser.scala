@@ -43,9 +43,9 @@ import com.tristanhunt.knockoff.TextChunk
 trait ChunkParser extends KChunkParser {
   lazy val brush: Parser[KChunk] = """[ ]*[^\n]+""".r ^^ { b ⇒ TextChunk(b.trim) }
   override lazy val chunk: Parser[KChunk] = {
-    pageProperty | horizontalRule | leadingStrongTextBlock | leadingEmTextBlock | bulletItem |
+    pageProperty | htmlBlock | horizontalRule | leadingStrongTextBlock | leadingEmTextBlock | bulletItem |
       numberedItem | indentedChunk | header | blockquote | linkDefinition |
-      htmlBlock | fencedChunk | textBlockWithBreak | textBlock | emptyLines | emptySpace
+      fencedChunk | textBlockWithBreak | textBlock | emptyLines | emptySpace
   }
   override lazy val htmlBlock = new Parser[KChunk] with HTMLBlock {
     def apply(in: Reader[Char]): ParseResult[KChunk] = findStart(in, new StringBuilder) match {

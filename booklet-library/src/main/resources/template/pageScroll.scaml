@@ -4,4 +4,4 @@
 - layout("default.scaml")
   - if (Page.tocVisibilityClass(page) != "hide")
     = render("toc.scaml")
-  ~ page.knockoff(_.toXHTML(page.blocks))
+  ~~ page.knockoff(_.toXHTML(page.blocks))

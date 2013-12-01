@@ -7,10 +7,11 @@ in [Pamflet][pf] work in *Booklet* too.
 
 Features of Booklet:
 
-* hardcoded template moved on [Scalate][sl];
+* hardcoded content is moved to dynamic [Scalate][sl] templates;
 * ability to use markdown inside HTML blocks;
+* ability to modify options per block of markdown;
 * options are merged from different levels: per documentation, per page, user specific;
-* reevaluate environment from the beginning for every publication. *From the one side this is much slower than caching. From the other one - any changes are applied immediately, which is important for end user while design stage. Also realtime parameter isn't a primary one for a such type of text generators. It works like a charm with [compass watch][cw] and interactive development.*
+* reevaluate environment from the beginning for every transformation. *Changes are applied immediately, which is important for end user while design stage. Realtime parameter isn't a primary one for a such type of text generators. It works like a charm with [compass watch][cw] and interactive development.*
 
 [See Booklet documentation](http://digimead-specific.github.io/Booklet/).
 

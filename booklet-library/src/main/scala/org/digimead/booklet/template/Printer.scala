@@ -23,10 +23,11 @@
 package org.digimead.booklet.template
 
 import java.util.Properties
+import java.util.regex.Matcher
 
 import scala.collection.JavaConversions._
+import scala.util.matching.Regex
 
-import org.antlr.stringtemplate.StringTemplate
 import org.digimead.booklet.Booklet
 import org.digimead.booklet.Settings
 import org.digimead.booklet.content.Content
@@ -95,12 +96,10 @@ object Printer {
    */
   def fileify(page: Page) = (page.getProperty("out") getOrElse { page.name + ".html" }).replace(' ', '+')
   /** Replace template values in input stream with bound properties. */
-  def process(input: CharSequence)(implicit properties: Properties) = {
-    val st = new StringTemplate
-    st.setTemplate(input.toString)
-    st.setAttributes(properties)
-    st.toString
-  }
+  def process(input: CharSequence)(implicit properties: Properties) =
+    """\$(\w+)\$""".r.replaceAllIn(input, _ match {
+      case Regex.Groups(key) ⇒ Matcher.quoteReplacement(properties.getProperty(key, "$" + key + "$"))
+    })
   def relative(lang: String, contents: Content, globalized: Globalized): String =
     if (contents.location.isDefault) {
       if (lang == globalized.language) "" else lang + "/"

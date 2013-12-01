@@ -46,8 +46,7 @@ object Resources {
         "LanguageBar.scaml" :: "PageNextNav.scaml" :: "PagePrevNav.scaml" :: "Prettify.scaml" :: "Twitter.scaml" :: Nil) map { "element/" + _ }
       if (withTemplates)
         Settings.templatePageContent :: Settings.templatePageDeepContents ::
-          Settings.templatePageScroll :: Settings.indexTemplate ::
-          Settings.indexMarkdown :: "default.scaml" :: "toc.scaml" :: elements
+          Settings.templatePageScroll :: "default.scaml" :: "toc.scaml" :: elements
       else
         Nil
     } ++ {

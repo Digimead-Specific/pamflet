@@ -49,40 +49,10 @@ You may add your own options as well.
     <td>changed by user</td>
   </tr>
   <tr>
-    <td>htmlAsMarkdown</td>
+    <td>[htmlAsMarkdown](https://github.com/digimead-specific/Booklet/blob/e118975a92d744f4869f81cb464c60ae3189b9a5/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L110)</td>
     <td>Flag indicating whether the HTML content should be processed as markdown.</td>
     <td>Y/N</td>
     <td>changed by user</td>
-  </tr>
-  <tr>
-    <td>[index](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L102)</td>
-    <td>Flag indicating whether the index should be generated.</td>
-    <td>Y/N</td>
-    <td>changed by user</td>
-  </tr>
-  <tr>
-    <td>[indexMarkdown](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L109)</td>
-    <td>A name of the file with an index content.</td>
-    <td>index.markdown</td>
-    <td>changed by user</td>
-  </tr>
-  <tr>
-    <td>[indexMarkdownLocation](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L116)</td>
-    <td>Full path to indexMarkdown.</td>
-    <td>/full/path/to/index.markdown</td>
-    <td>[changed by application](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L247)</td>
-  </tr>
-  <tr>
-    <td>[indexTemplate](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L129)</td>
-    <td>A name of the file with the index template.</td>
-    <td>index.scaml</td>
-    <td>changed by user</td>
-  </tr>
-  <tr>
-    <td>[indexTemplateLocation](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L136)</td>
-    <td>Full path to indexTemplate.</td>
-    <td>/full/path/to/index.scaml</td>
-    <td>[changed by application](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/BookletStorage.scala#L259)</td>
   </tr>
   <tr>
     <td>[languages](https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L149)</td>

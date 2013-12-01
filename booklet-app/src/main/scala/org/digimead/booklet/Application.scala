@@ -82,7 +82,6 @@ object Application {
 
   protected def help() = {
     println("""Usage: booklet [options] [@userPropertiesFile] [SRC] [DEST]
-              |-i turn on index generation
               |-o turn on offline manifest
               |-s save templates for customization
               |-v -v verbose
@@ -119,10 +118,6 @@ object Application {
     if (args.contains("-o")) {
       implicit val implicitProperties = properties
       Settings.offline = true
-    }
-    if (args.contains("-i")) {
-      implicit val implicitProperties = properties
-      Settings.index = true
     }
     if (args.contains("-?") || args.contains("-h")) {
       help()

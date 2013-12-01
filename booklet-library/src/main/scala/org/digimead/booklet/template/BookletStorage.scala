@@ -26,6 +26,8 @@ import java.io.File
 import java.io.IOException
 import java.util.Properties
 
+import scala.collection.mutable
+
 import org.digimead.booklet.Booklet
 import org.digimead.booklet.Resources
 import org.digimead.booklet.Settings
@@ -75,22 +77,12 @@ class BookletStorage(val input: File, val properties: Properties = new Propertie
       updateProperties(location, properties)
       val files = location.baseLang.listFiles.filter(_.getName == "files").flatMap(_.listFiles.map { f ⇒ (f.getName, f.toURI) })
       val favicon = location.baseLang.listFiles.filter(_.getName == "favicon.ico").headOption.map { _.toURI }
-      if (!Settings.index) {
-        log.debug("Process storage as booklets.")
-        lang -> Content(location, rootSection(location.baseLang, lang)(properties), files, favicon)
-      } else {
-        log.debug("Process storage as index of raw markdowns.")
-        lang -> Content(location, indexSection(location.baseLang, lang)(properties), files, favicon)
-      }
+      lang -> Content(location, rootSection(location.baseLang, lang)(properties), files, favicon)
     }
+    // compress cache
+    BookletStorage.knockoffCache --= BookletStorage.knockoffCache.keys.filterNot(_.exists())
+    // result
     Globalized(Map(contents: _*))
-  }
-  def indexSection(dir: File, lang: String)(implicit properties: Properties): Section = {
-    def emptySection = Section(None, "", Seq.empty, Nil)
-    if (dir.exists)
-      indexSection(None, "", dir, lang).headOption getOrElse emptySection
-    else
-      emptySection
   }
   def rootSection(dir: File, lang: String)(implicit properties: Properties): Section = {
     def emptySection = Section(None, "", Seq.empty, Nil)
@@ -100,15 +92,21 @@ class BookletStorage(val input: File, val properties: Properties = new Propertie
       emptySection
   }
   def read(file: File) = scala.io.Source.fromFile(file).mkString("")
-  def knock(file: File)(implicit properties: Properties): (Seq[Block], Properties) = {
-    val frontin = Frontin(read(file))
-    val markdownProperties = Booklet.mergeWithStrings(properties, frontin.header.toSeq: _*)
-    try ((BookletDiscounter.knockoff(Printer.process(frontin body)(markdownProperties), markdownProperties), markdownProperties))
-    catch {
-      case e: Throwable ⇒
-        Console.err.println("Error while processing " + file.toString)
-        throw e
-    }
+  def knock(file: File)(implicit properties: Properties): (Seq[Block], Properties) = BookletStorage.knockoffCache.get(file) match {
+    case Some((mtime, cachedBlocks, cachedProperties, markdownProperties)) if mtime == file.lastModified() && properties == cachedProperties ⇒
+      (cachedBlocks, markdownProperties)
+    case _ ⇒
+      val frontin = Frontin(read(file))
+      val markdownProperties = Booklet.mergeWithStrings(properties, frontin.header.toSeq: _*)
+      try {
+        val blocks = BookletDiscounter.knockoff(Printer.process(frontin body)(markdownProperties), markdownProperties)
+        BookletStorage.knockoffCache(file) = (file.lastModified(), blocks, properties, markdownProperties)
+        ((blocks, markdownProperties))
+      } catch {
+        case e: Throwable ⇒
+          Console.err.println("Error while processing " + file.toString)
+          throw e
+      }
   }
   def writeTemplates(target: File, lang: String)(implicit properties: Properties) {
     log.debug(s"Write templates to ${target.getCanonicalPath()} for '${lang}'.")
@@ -144,39 +142,6 @@ class BookletStorage(val input: File, val properties: Properties = new Propertie
               }
             case None ⇒
               bookletSection(Some(f.getName), localPath + "/" + f.getName, f, lang).toSeq
-          }
-        }
-      }
-      Section(fileName, localPath, blocks, children)(markdownProperties)
-    }
-  }
-  protected def indexSection(fileName: Option[String], localPath: String, dir: File, lang: String)(implicit properties: Properties): Option[Section] = {
-    val (blocks, markdownProperties) = knock(Settings.indexMarkdownLocation getOrElse
-      { throw new IllegalStateException("Unable to find 'indexMarkdownLocation' property.") })
-    val files = getFiles(dir, lang)
-    files.find(isMarkdown).map { head ⇒
-      val childFiles = files.filterNot { f ⇒ f.isDirectory && Settings.languages.contains(f.getName) }
-      val children = childFiles.flatMap { f ⇒
-        if (isMarkdown(f))
-          try {
-            val (blocks, markdownProperties) = knock(f)
-            Seq(Leaf(Some(f.getName), localPath + "/" + f.getName, blocks)(markdownProperties))
-          } catch {
-            case e: Throwable ⇒
-              log.error(s"Markdown file '${f.getName}' is broken: " + e.getMessage(), e)
-              Seq.empty
-          }
-        else {
-          Settings.excludeFolder match {
-            case Some(filter) ⇒
-              if (!filter.r.pattern.matcher(f.getName).matches)
-                indexSection(Some(f.getName), localPath + "/" + f.getName, f, lang).toSeq
-              else {
-                log.debug(s"Skip folder '${f.getName}' because of filter /$filter/")
-                Seq.empty
-              }
-            case None ⇒
-              indexSection(Some(f.getName), localPath + "/" + f.getName, f, lang).toSeq
           }
         }
       }
@@ -251,14 +216,6 @@ class BookletStorage(val input: File, val properties: Properties = new Propertie
     // Path with the base directory.
     properties.setProperty("basePath", input.getCanonicalPath())
 
-    // Path to the index markdown file.
-    Settings.indexMarkdownLocation = findResource(Settings.indexMarkdown, location.resourcesPath, location.resourcesPathLang) getOrElse {
-      throw new IOException(s"Index markdown file '${Settings.indexMarkdown}' not found.")
-    }
-    // Path to the index template file.
-    Settings.indexTemplateLocation = findResource(Settings.indexTemplate, location.resourcesPath, location.resourcesPathLang) getOrElse {
-      throw new IOException(s"Template file '${Settings.indexTemplate}' not found.")
-    }
     // Path to the templatePageContent file.
     Settings.templatePageContentLocation = findResource(Settings.templatePageContent, location.resourcesPath, location.resourcesPathLang) getOrElse {
       throw new IOException(s"Template file '${Settings.templatePageContent}' not found.")
@@ -285,6 +242,9 @@ class BookletStorage(val input: File, val properties: Properties = new Propertie
 }
 
 object BookletStorage {
+  /** Knockoff cache */
+  val knockoffCache = new mutable.HashMap[File, (Long, Seq[Block], Properties, Properties)] with mutable.SynchronizedMap[File, (Long, Seq[Block], Properties, Properties)]
+
   def apply(input: File, properties: Properties = new Properties) = new BookletStorage(input, properties)
   /** Instance with booklet directories. */
   class Location(input: File, val lang: String)(implicit properties: Properties) {
