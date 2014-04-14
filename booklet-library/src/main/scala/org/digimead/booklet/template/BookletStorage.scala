@@ -99,7 +99,7 @@ class BookletStorage(val input: File, val properties: Properties = new Propertie
       val frontin = Frontin(read(file))
       val markdownProperties = Booklet.mergeWithStrings(properties, frontin.header.toSeq: _*)
       try {
-        val blocks = BookletDiscounter.knockoff(Printer.process(frontin body)(markdownProperties), markdownProperties)
+        val blocks = BookletDiscounter.knockoff(Printer.process(frontin.body)(markdownProperties), markdownProperties)
         BookletStorage.knockoffCache(file) = (file.lastModified(), blocks, properties, markdownProperties)
         ((blocks, markdownProperties))
       } catch {

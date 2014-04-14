@@ -36,7 +36,7 @@ object Frontin {
       case x :: xs if separates(x) ⇒
         xs span { !separates(_) } match {
           case (h, b) ⇒ Frontin(Some(h.mkString("")),
-            if (b isEmpty) "" else b.tail.mkString(""))
+            if (b.isEmpty) "" else b.tail.mkString(""))
         }
       case _ ⇒ Frontin(None, str)
     }

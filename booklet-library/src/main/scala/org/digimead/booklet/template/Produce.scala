@@ -70,10 +70,9 @@ object Produce {
     if (Settings.offline)
       Storage.writeString(Settings.manifest, Booklet.manifest(content), target)
   }
-  protected def copy(from: File, to: File) {
-    new FileOutputStream(to) getChannel () transferFrom (
-      new FileInputStream(from) getChannel, 0, Long.MaxValue)
-  }
+  protected def copy(from: File, to: File) =
+    new FileOutputStream(to).getChannel().transferFrom(
+      new FileInputStream(from).getChannel(), 0, Long.MaxValue)
   protected def recursiveListFiles(f: File): Array[File] = {
     val these = f.listFiles
     these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)

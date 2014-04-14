@@ -34,7 +34,7 @@ val commonSettings = Seq(
     libraryDependencies += "net.databinder" %% "unfiltered-jetty" % unfilteredVersion,
     libraryDependencies += "org.jsoup" % "jsoup" % "1.7.3",
     libraryDependencies += "org.fusesource.scalate" %% "scalate-core" % "1.6.1",
-    libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.5")
+    libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.7")
 
 lazy val booklet: Project = (project in file(".")) settings(commonSettings: _*) settings(
     name := "booklet",
@@ -50,6 +50,6 @@ lazy val app: Project = (project in file("booklet-app")) settings(commonSettings
     description := "booklet app for previewing and publishing project documentation",
     libraryDependencies += "org.scala-sbt" % "launcher-interface" % launcherInterfaceVersion % "provided",
     libraryDependencies += "javax.servlet" % "servlet-api" % servletApiVersion,
-    libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.7.5") dependsOn(library)
+    libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.7.7") dependsOn(library)
 
 //logLevel := Level.Debug
