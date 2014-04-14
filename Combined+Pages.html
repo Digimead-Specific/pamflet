@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Booklet — Combined Pages</title>
+    <link href="http://netdna.bootstrapcdn.com/font-awesome/3.1.1/css/font-awesome.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="css/jquery-ui.min.css" type="text/css"/>
+    <link rel="stylesheet" href="css/sheet.css" type="text/css"/>
+    <link rel="stylesheet" href="css/screen.css" type="text/css" media="screen, projection"/>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
+    <script type="text/javascript" src="js/jquery.collapse.js"></script>
+    <script type="text/javascript" src="js/jquery.jsonp-2.4.0.min.js"></script>
+    <script type="text/javascript" src="js/tsort.min.js"></script>
+    <script type="text/javascript">
+      var artifacts = "booklet-app, booklet-knockoff, booklet-library".split(/\s*,\s*/).sort();
+      var artifact = new Object();
+      artifact.user = 'digimead-specific';
+      artifact.project = 'Booklet';
+    </script>
+    <script type="text/javascript" src="http://commondatastorage.googleapis.com/digimead/digimead.js"></script>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <meta http-equiv="Content-Type" content="text/html"/>
+<script type="text/javascript" src="js/prettify/prettify.js"></script>
+<script type="text/javascript" src="js/prettify/lang-lua.js"></script>
+<script type="text/javascript" src="js/prettify/lang-scala.js"></script>
+<link rel="stylesheet" href="css/prettify.css" type="text/css"/>
+<script type='text/javascript'>
+  //<![CDATA[
+    window.onload=function() { prettyPrint(); };
+  //]]>
+</script>
+  </head>
+  <body class="color_scheme-redmond">
+    <header>
+      <h3>
+        Digimead Artifacts
+      </h3>
+      <a id="contact">
+        <span data-hover="Feel free to contact.">
+          You are welcome ;)))
+        </span>
+      </a>
+    </header>
+    <div style="display: none;">
+      <!-- / deps definition -->
+      <div id="depsForArtifact">
+        <div id="depsName"></div>
+        <div id="depsCentral">
+          <span>
+            Maven Central:
+          </span>
+          <span id="depsContentCentralAvailable" style="display: none;">
+            available
+          </span>
+          <span id="depsContentCentralNotAvailable" style="display: none;">
+            not available
+          </span>
+        </div>
+        <div id="depsIvy" style="visibility: hidden;">
+          <span>
+            From Digimead Ivy:
+          </span>
+          <span id="jar">
+            <a>
+              jar
+            </a>
+          </span>
+          <span id="source" style="display: none;">
+            |
+            <a>
+              source
+            </a>
+          </span>
+          <span id="doc" style="display: none;">
+            |
+            <a>
+              doc
+            </a>
+          </span>
+        </div>
+        <div id="depsMaven" style="visibility: hidden;">
+          <span>
+            From Digimead Maven:
+          </span>
+          <span id="jar">
+            <a>
+              jar
+            </a>
+          </span>
+          <span id="source" style="display: none;">
+            |
+            <a>
+              source
+            </a>
+          </span>
+          <span id="doc" style="display: none;">
+            |
+            <a>
+              doc
+            </a>
+          </span>
+        </div>
+        <div id="depsAPI">
+          <a href="#" title="Open artifact API in a new window.">
+            API
+          </a>
+        </div>
+      </div>
+      <div id="depsLibrary">
+        <ul>
+          <li>
+            <a href="#depsSBT">
+              SBT
+            </a>
+          </li>
+          <li>
+            <a href="#depsMaven">
+              Maven
+            </a>
+          </li>
+          <li>
+            <a href="#depsIvy">
+              Ivy
+            </a>
+          </li>
+          <li>
+            <a href="#depsGrape">
+              Grape
+            </a>
+          </li>
+          <li>
+            <a href="#depsGradle">
+              Gradle
+            </a>
+          </li>
+          <li>
+            <a href="#depsBuildr">
+              Buildr
+            </a>
+          </li>
+        </ul>
+        <div id="depsSBT">
+          <pre>libraryDependencies += "###ORG###" % "###ARTIFACT###" % "###VERSION###"</pre>
+        </div>
+        <div id="depsMaven">
+          <pre>&lt;dependency&gt;&#x000A;  &lt;groupId&gt;###ORG###&lt;/groupId&gt;&#x000A;  &lt;artifactId&gt;###ARTIFACT###&lt;/artifactId&gt;&#x000A;  &lt;version&gt;###VERSION###&lt;/version&gt;&#x000A;&lt;/dependency&gt;</pre>
+        </div>
+        <div id="depsIvy">
+          <pre>&lt;dependency org=&quot;###ORG###&quot; name=&quot;###ARTIFACT###&quot; rev=&quot;###VERSION###&quot; /&gt;</pre>
+        </div>
+        <div id="depsGrape">
+          <pre>@Grapes(&#x000A;    @Grab(group='###ORG###', module='###ARTIFACT###', version='###VERSION###')&#x000A;)</pre>
+        </div>
+        <div id="depsGradle">
+          <pre>'###ORG###:###ARTIFACT###:###VERSION###'</pre>
+        </div>
+        <div id="depsBuildr">
+          <pre>'###ORG###:###ARTIFACT###:jar:###VERSION###'</pre>
+        </div>
+      </div>
+      <div id="depsPlugin">
+        <br/>
+        <div>
+          You may add Maven repository:
+        </div>
+        <pre>resolvers += "digimead-maven" at "http://storage.googleapis.com/maven.repository.digimorg/"</pre>
+        <div>
+          Or you may add Ivy repository:
+        </div>
+        <pre>resolvers += Resolver.url("digimead-ivy", url("http://storage.googleapis.com/ivy.repository.digimead.org/"))(Resolver.defaultIvyPatterns)</pre>
+        <div>
+          And then
+        </div>
+        <pre>addSbtPlugin("###ORG###" % "###ARTIFACT###" % "###VERSION###")</pre>
+        <div>
+          Or you may create a
+        </div>
+        <pre>project/project/Build.scala</pre>
+        <div>
+          file that looks like the following:
+        </div>
+        <pre class="prettyprint lang-scala">import sbt._&#x000A;object PluginDef extends Build {&#x000A;  override def projects = Seq(root)&#x000A;  lazy val root = Project("plugins", file(".")) dependsOn(plugin)&#x000A;  lazy val plugin = uri("git://github.com/###ORG###/###ARTIFACT###.git#TagOrCommit")&#x000A;}</pre>
+        <div>
+          You may find more information about Build.scala in SBT documentation
+        </div>
+      </div>
+      <!-- / dialog_contact definition -->
+      <div id="dialog_contacts">
+        <div>
+          <h3>
+            <span>
+              Mr.
+            </span>
+            Alexey Aksenov
+            <span>
+              aka
+            </span>
+            ЁЖ
+          </h3>
+          <img id="photo" src="http://commondatastorage.googleapis.com/ezhik/simple.png"/>
+          <img id="avatar" src="http://commondatastorage.googleapis.com/ezhik/avatar.png"/>
+          <table>
+            <tr id="priMail">
+              <td>
+                Primary email
+              </td>
+              <td id="data"></td>
+            </tr>
+            <tr id="secMail">
+              <td>
+                Secondary email
+              </td>
+              <td id="data"></td>
+            </tr>
+            <tr id="skype">
+              <td>
+                Skype
+              </td>
+              <td></td>
+            </tr>
+            <tr id="icq">
+              <td>
+                ICQ
+              </td>
+              <td id="data"></td>
+            </tr>
+            <tr id="ru_ph">
+              <td>
+                Russian phone
+              </td>
+              <td id="data"></td>
+            </tr>
+            <tr id="uk_ph">
+              <td>
+                United Kindom phone
+              </td>
+              <td id="data"></td>
+            </tr>
+            <tr id="ww">
+              <td>
+                WorldWide SIP
+              </td>
+              <td id="data"></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <!-- / dialog_error definition -->
+      <div id="dialog_error">
+        <p id="error">
+          <span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>
+        </p>
+      </div>
+      <!-- / dialog_version definition -->
+      <div id="dialog_version" class="dialog_window" title="Artifact information">
+        <div id="API" style="visibility: hidden;">
+          <button>
+            Open API documentation in new tab/window
+          </button>
+        </div>
+        <div id="deps"></div>
+        <div id="depsRepoHead">
+          Repositories:
+        </div>
+        <div id="depsRepoEntry">
+          Digimead Ivy located at
+          <i>
+            http://storage.googleapis.com/ivy.repository.digimead.org/
+          </i>
+        </div>
+        <div id="depsRepoEntry">
+          Digimead Maven located at
+          <i>
+            http://storage.googleapis.com/maven.repository.digimead.org/
+          </i>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+<a class="page prev nav" title="Contents in Depth" href="Contents+in+Depth.html">
+  <span class="space">
+    &nbsp;
+  </span>
+  <span class="flip">
+    ❧
+  </span>
+</a>
+      <div id="main">
+        <div class="top">
+  <div class="title">
+    <span>Booklet
+    - Combined Pages
+</span>
+    <div class="logo">
+      <img src="http://commondatastorage.googleapis.com/digimead/booklet.png" style="width: 100px;"/>
+    </div>
+  </div>
+  <div class="nav">
+    <div class="left">
+      <a href="Contents+in+Depth.html">Contents in Depth</a>
+      <span class="arrow">&#8678;</span>
+      <span>Previous Page</span>
+    </div>
+    <div class="center">
+      
+    </div>
+  </div>
+</div>
+<div class="content">
+  <div class="toc">
+    <div class="tocwrapper show">
+  <h4 class="toctitle">Contents</h4>
+  <div class="tocbody">
+    <div><a href="#Booklet">Booklet</a></div>
+    <ol class="toc"> <li><div><a href="#Usage">Usage</a></div></li><li><div><a href="#Options">Options</a></div></li><li><div><a href="#For+Your+Perusal">For Your Perusal</a></div></li> </ol>
+  </div>
+</div>
+
+  </div>
+  <div class="generated">
+<h1 id="Booklet">Booklet<a href="#Booklet" class="header-link"><span class="header-link-content">&nbsp;</span></a></h1><p><em>Booklet</em> is a publishing software for short texts, particularly user documentation. It is designed to be easy to write and read on any platform.
+<em>Booklet</em> is a fork of <a href="https://github.com/n8han/pamflet">Pamflet</a> by Nathan Hamblen and others. Before use <em>Booklet</em> please read <a href="http://pamflet.databinder.net">Pamflet documentation</a>. Most things that work
+in <a href="https://github.com/n8han/pamflet">Pamflet</a> work in <em>Booklet</em> too.
+</p><p>Features of Booklet:
+</p><ul><li>hardcoded content is moved to dynamic <a href="http://scalate.fusesource.org/">Scalate</a> templates;
+</li><li>ability to use markdown inside HTML blocks;
+</li><li>ability to modify options per block of markdown;
+</li><li>options are merged from different levels: per documentation, per page, user specific;
+</li><li>reevaluate environment from the beginning for every transformation. <em>Changes are applied immediately, which is important for end user while design stage. Realtime parameter isn't a primary one for a such type of text generators. It works like a charm with <a href="http://compass-style.org/help/tutorials/command-line/">compass watch</a> and interactive development.</em>
+</li></ul><p>This documentation is created with Booklet. Such result is a hardly available with hardcoded template. Scalate gave it a new breath of life.
+</p><hr/>
+<blockquote><p><a href="$stable$">Latest stable version $version$</a>
+</p></blockquote><blockquote><p><a href="$development$">Latest development version $version$</a>
+</p></blockquote><h1 id="Usage">Usage<a href="#Usage" class="header-link"><span class="header-link-content">&nbsp;</span></a></h1><h3 id="Components">Components<a href="#Components" class="header-link"><span class="header-link-content">&nbsp;</span></a></h3><p>Booklet itself consists of 3 parts:
+</p><ul><li><strong><a href="https://github.com/digimead-specific/Booklet/tree/master/booklet-library">booklet-library</a></strong> - Core part that provides storage, options, <a href="http://scalate.fusesource.org/">Scalate</a> publishing logic;
+</li><li><strong><a href="https://github.com/digimead-specific/Booklet/tree/master/booklet-knockoff">booklet-knockoff</a></strong> - <a href="https://github.com/tristanjuricek/knockoff">Knockoff</a> integration part that enhance standard <a href="https://github.com/tristanjuricek/knockoff">Knockoff</a> parsers;
+</li><li><strong><a href="https://github.com/digimead-specific/Booklet/tree/master/booklet-app">booklet-app</a></strong> - application, that compatible with <a href="http://www.scala-sbt.org/0.13.0/docs/Detailed-Topics/Launcher.html">SBT launcher</a>.
+</li></ul><h3 id="Use+as+the+standalone+application">Use as the standalone application<a href="#Use+as+the+standalone+application" class="header-link"><span class="header-link-content">&nbsp;</span></a></h3><p>You may start it in *NIX environment with command line like this:
+</p><pre class="prettyprint linenums"><code class="prettyprint lang-lua">java \
+  -Dsbt.boot.properties=/home/user/booklet/booklet-app.configuration \
+  -jar /home/user/booklet/sbt-launch.jar -- @mybooklet.properties
+</code></pre><p>where
+</p><ul><li><strong>sbt.boot.properties</strong> - location of the <a href="http://www.scala-sbt.org/release/docs/Detailed-Topics/Launcher#configuration">application configuration</a>
+</li><li><strong>sbt-launch.jar</strong> - the latest ;-) <a href="http://www.scala-sbt.org/release/docs/Getting-Started/Setup.html#manual-installation">launcher from SBT</a>
+</li><li><strong>mybooklet.properties</strong> - argument with user options, for example. Use <em>'-h'</em> for help
+</li></ul><h4 id="Application+configuration">Application configuration<a href="#Application+configuration" class="header-link"><span class="header-link-content">&nbsp;</span></a></h4><p>The typical <a href="http://www.scala-sbt.org/release/docs/Detailed-Topics/Launcher#configuration">application configuration</a> is provided bellow. You may copy'n'paste it or <a href="https://raw.github.com/digimead-specific/Booklet/master/docs/simple.configuration">download sample one</a> and modify. Change <strong>1.2.3.4-SNAPSHOT</strong> version to the latest available.
+</p><pre class="prettyprint linenums"><code class="prettyprint lang-lua">[scala]
+  version: 2.10.3
+[app]
+  org: org.digimead
+  name: booklet-app
+  version: 1.2.3.4-SNAPSHOT
+  class: org.digimead.booklet.Application
+  cross-versioned: binary
+[repositories]
+  local
+  maven-central
+  digimead-maven: http://storage.googleapis.com/maven.repository.digimead.org/
+[boot]
+  directory: \${user.home}/.sbt/booklet-boot
+</code></pre><h4 id="SBT+launcher">SBT launcher<a href="#SBT+launcher" class="header-link"><span class="header-link-content">&nbsp;</span></a></h4><p>You may use any available <a href="http://www.scala-sbt.org/release/docs/Getting-Started/Setup.html#manual-installation">SBT launcher</a>. I recommend the latest one.
+</p><h4 id="User+options">User options<a href="#User+options" class="header-link"><span class="header-link-content">&nbsp;</span></a></h4><p>File with user options may be specified in <strong>@file</strong> format. For example I used bellow options file while designing Booklet:
+</p><pre class="prettyprint linenums"><code class="prettyprint lang-lua">resources: /my/path/to/template-dev
+user: digimead-specific
+project: Booklet
+artifacts: booklet-app, booklet-knockoff, booklet-library
+logo: http://commondatastorage.googleapis.com/digimead/booklet.png
+disqus: Booklet
+</code></pre><p>Of course, for publishing I provided different options. I specified path to production template with compressed resources and adjusted other parameters.
+</p><h4 id="Running">Running<a href="#Running" class="header-link"><span class="header-link-content">&nbsp;</span></a></h4><p><strong>docs</strong> directory with markdown files <a href="https://github.com/digimead-specific/Booklet/blob/46c0f211e99a674531d1a89621d6aee08575ea62/booklet-app/src/main/scala/org/digimead/booklet/Application.scala#L61">must be exists</a>. After start you will see something like:
+</p><pre class="prettyprint linenums"><code class="prettyprint lang-lua">[main] INFO org.digimead.booklet.template.Preview\$ - Warm up Scalate engine.
+[main] INFO org.eclipse.jetty.server.Server - jetty-7.6.9.v20130131
+[main] INFO org.eclipse.jetty.server.handler.ContextHandler - started o.e.j.s.ServletContextHandler{/,null}
+[main] INFO org.eclipse.jetty.server.AbstractConnector - Started SocketConnector@127.0.0.1:50059
+
+Previewing `docs`. Press CTRL+C to stop.
+</code></pre><p>The <em>Booklet</em> is ready to process HTTP requests on <strong>127.0.0.1:50059</strong>.
+</p><h3 id="Use+as+a+library">Use as a library<a href="#Use+as+a+library" class="header-link"><span class="header-link-content">&nbsp;</span></a></h3><p>Add Booklet to you application and invoke
+</p><pre class="prettyprint linenums"><code class="prettyprint lang-scala">Produce(BookletStorage(input, bookletProperties).globalized, output)
+</code></pre><p>where
+</p><ul><li>input - directory with markdown files
+</li><li>output - directory with transformation result
+</li><li>bookletProperties - user options
+</li></ul><h1 id="Options">Options<a href="#Options" class="header-link"><span class="header-link-content">&nbsp;</span></a></h1><p>There are several booklet options that affect the result. From the user point of view the options is a map of <em>key -&gt; value</em> pairs. These pairs are held by <a href="http://docs.oracle.com/javase/6/docs/api/java/util/Properties.html">Properties</a>. There are few sources of options:
+</p><ul><li>file booklet.properties in markdown catalog (the lowest priority)
+</li><li>properties that is <a href="http://pamflet.databinder.net/Template+Properties.html#Properties+Front+Matter">emmedded into a markdown</a>
+</li><li>user specified properties (the highest priority)
+</li></ul><p>While processing all options are merged and <a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/Printer.scala#L67">converted</a> to <a href="http://scalate.fusesource.org/documentation/scalate-embedding-guide.html#Passing_Data_to_the_Template">Scalate attributes</a>.
+</p><p>You may add your own options as well.
+</p><h5 id="List+of+the+booklet+options.">List of the booklet options.<a href="#List+of+the+booklet+options." class="header-link"><span class="header-link-content">&nbsp;</span></a></h5><body><table><tbody><tr><th><p>Key</p></th><th><p>Description</p></th><th><p>Example Values</p></th><th><p>Notes</p></th>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/21d6a0feb3121028ec32550f05f113376ec2332d/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L85">codeLineNums</a></p></td><td><p>Flag indicating whether the line numbers in code should be visible.</p></td><td><p>Y/N</p></td><td><p>changed by user</p></td>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L83">defaultLanguage</a></p></td><td><p>A name of the default language.</p></td><td><p>en</p></td><td><p>changed by user</p></td>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L90">excludeFolder</a></p></td><td><p>An exclude regexp that applied to booklet markdowns.</p></td><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/BookletStorage.scala#L137">\d+</a></p></td><td><p>changed by user</p></td>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L94">excludeMarkdown</a></p></td><td><p>An exclude regexp that applied to booklet markdowns.</p></td><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/BookletStorage.scala#L193">\d+</a></p></td><td><p>changed by user</p></td>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L98">fileNameAsVersion</a></p></td><td><p>A name of the file with an index content.</p></td><td><p>Y/N</p></td><td><p>changed by user</p></td>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/e118975a92d744f4869f81cb464c60ae3189b9a5/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L110">htmlAsMarkdown</a></p></td><td><p>Flag indicating whether the HTML content should be processed as markdown.</p></td><td><p>Y/N</p></td><td><p>changed by user</p></td>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L149">languages</a></p></td><td><p>A list of the booklet languages.</p></td><td><p>en, ja, ru</p></td><td><p>changed by user</p></td>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L155">manifest</a></p></td><td><p>A name of the file with site manifest for offline usage.</p></td><td><p>booklet.manifest</p></td><td><p>changed by user</p></td>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L159">offline</a></p></td><td><p>Flag indicating whether the generated content should support offline mode.</p></td><td><p>Y/N</p></td><td><p>changed by user</p></td>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L166">resources</a></p></td><td><p>Full path to user container with booklet template.</p></td><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/BookletStorage.scala#L299">/full/path/to/directory/with/template</a></p></td><td><p>changed by user</p></td>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L176">templateDirectory</a></p></td><td><p>A name of the template directory.</p></td><td><p>template</p></td><td><p>changed by user</p></td>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L180">templatePageContent</a></p></td><td><p>A name of the PageContent template.</p></td><td><p>pageContent.scaml</p></td><td><p>changed by user</p></td>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L184">templatePageContentLocation</a></p></td><td><p>Full path to PageContent template.</p></td><td><p>/full/path/to/pageContent.scaml</p></td><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/BookletStorage.scala#L263">changed by application</a></p></td>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L197">templatePageDeepContents</a></p></td><td><p>A name of the PageDeepContents template.</p></td><td><p>pageDeepContents.scaml</p></td><td><p>changed by user</p></td>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L193">templatePageDeepContentsLocation</a></p></td><td><p>Full path to PageDeepContents template.</p></td><td><p>/full/path/to/pageDeepContents.scaml</p></td><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/BookletStorage.scala#L267">changed by application</a></p></td>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L214">templatePageScroll</a></p></td><td><p>A name of the PageScroll template.</p></td><td><p>pageScroll.scaml</p></td><td><p>changed by user</p></td>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L218">templatePageScrollLocation</a></p></td><td><p>Full path to PageScroll template.</p></td><td><p>/full/path/to/pageScroll.scaml</p></td><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/template/BookletStorage.scala#L271">changed by application</a></p></td>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L231">templateProperties</a></p></td><td><p>A name of the file with template properties.</p></td><td><p>booklet.properties</p></td><td><p>changed by user</p></td>
+   </tr><tr><td><p>title</p></td><td><p>Page title.</p></td><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/content/Leaf.scala#L36">My Title</a></p></td><td><p>changed by user</p></td>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L235">titlePattern</a></p></td><td><p>Title pattern that applied to each page title (not to the content title).</p></td><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/content/Leaf.scala#L36">{{{ %s }}}</a></p></td><td><p>changed by user</p></td>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L239">titleFromFileName</a></p></td><td><p>Flag indicating whether page title should be generated from the file name.</p></td><td><p>Y/N</p></td><td><p>changed by user</p></td>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L243">tocReverse</a></p></td><td><p>Flag with toc sort order.</p></td><td><p>Y/N</p></td><td><p>changed by user</p></td>
+   </tr><tr><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-library/src/main/scala/org/digimead/booklet/Settings.scala#L247">verbose</a></p></td><td><p>Flag indicating whether the library should be verbose.</p></td><td><p>Y/N</p></td><td><p><a href="https://github.com/digimead-specific/Booklet/blob/f460b16d8cd1537d8830febeaca5a241c192d21a/booklet-app/src/main/scala/org/digimead/booklet/Application.scala#L104">changed by user or application</a></p></td>
+   </tr>
+  </tbody>
+ </table>
+</body><h2 id="For+Your+Perusal">For Your Perusal<a href="#For+Your+Perusal" class="header-link"><span class="header-link-content">&nbsp;</span></a></h2><p>All techniques described in this booklet are used to produce it. Take
+a look through Booklet's <code>docs/</code> directory <a href="https://github.com/digimead-specific/Booklet/tree/master/docs">on github</a>.
+</p>
+  </div>
+</div>
+
+      </div>
+      <div id="menu">
+        <h3>
+          Available parts
+        </h3>
+      </div>
+      <div id="interact">
+        <div id="currentState">
+          <h3>
+            Current state
+          </h3>
+          <a href="https://travis-ci.org/digimead-specific/Booklet">
+            <img src="https://travis-ci.org/digimead-specific/Booklet.png"/>
+          </a>
+        </div>
+        <div id="collaborate">
+          <h3>
+            I Like It
+          </h3>
+          <table>
+            <tr>
+              <td>
+                <div id="google">
+<div class="g-plusone" data-size="tall"></div>
+<script type='text/javascript'>
+  //<![CDATA[
+    window.___gcfg = {lang: "en"};
+    (function() {
+      var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+      po.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+    })();
+  //]]>
+</script>
+                </div>
+              </td>
+              <td>
+                <div id="facebook">
+<div id="fb-root"></div>
+<script type='text/javascript'>
+  //<![CDATA[
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "//connect.facebook.net/en/all.js#xfbml=1";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  //]]>
+</script>
+<div class="fb-like" data-href="https://developers.facebook.com/docs/plugins/" data-layout="box_count" data-action="recommend" data-show-faces="true" data-share="true"></div>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <div id="versions">
+          <h3>
+            Versions
+          </h3>
+        </div>
+        <div id="correctness">
+          <h3>
+            Correctness
+          </h3>
+          <script type="text/javascript" src="js/orphus.js"></script>
+          <a href="http://orphus.ru" id="orphus" target="_blank" title="Orphus system">
+            <img alt="Orphus system" src="img/orphus.gif" border="0" width="121" height="21"/>
+          </a>
+          <div id="message">
+            Select spelling error with your mouse and press Ctrl+Enter
+          </div>
+          <div id="description">
+            This information is provided in the hope that it will be useful and help people with their first steps, even if it is written in broken English... Would you have preferred well written Russian? :-) Please, correct it, if you find something inappropriate.
+          </div>
+        </div>
+      </div>
+    </div>
+    <a class="fork nav" href="http://github.com/digimead-specific/Booklet">
+      <img src="img/fork.png" alt="Fork me on GitHub"/>
+    </a>
+    <footer>
+      <a title="The plugin which helps to organize a uniform but agile and easy documentation process." href="http://digimead.github.io/sbt-site-manager/">
+        Generated with SBT-Site-Manager
+      </a>
+      <span title="All content on this site is Copyright to Alexey Aksenov aka Ezh unless otherwise specified.">
+        © Alexey Aksenov
+      </span>
+    </footer>
+  </body>
+</html>
